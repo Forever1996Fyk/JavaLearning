@@ -41,6 +41,9 @@
                 }
             ]
         },
+        "publishConfig": { 
+            "registry": "https://npm.pkg.github.com/" 
+        },
         "sharing": {
             "douban": false,
             "facebook": false,
