@@ -13,7 +13,7 @@
     * 并发
 * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
-        * [Spring IOC & AOP](develop_framework/Spring/Ioc_Aop.md)
+        * [Spring IOC & Bean](develop_framework/Spring/IOC_Bean.md)
     * [Spring MVC](develop_framework/SpringMVC.md)
     * [Spring Boot](develop_framework/SpringBoot.md)
     * [MyBatis](develop_framework/MyBatis.md)
