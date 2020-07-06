@@ -41,7 +41,7 @@
                 }
             ]
         },
-        { 
+        "registry": { 
             "registry": "https://npm.pkg.github.com/" 
         },
         "sharing": {
