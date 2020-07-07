@@ -128,5 +128,5 @@ Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初
 * 如果有和加载这个Bean的Spring容器相关的BeanPostProcessor对象, 就执行postProcessAfterInitialization()方法。
 * 当要销毁Bean的时候, 如果Bean实现了DisposableBean接口, 就执行destory()方法。
 * 当要销毁Bean的时候, 如果Bean在配置文件中定义包含`destory-method`属性, 执行指定的方法。
-![Spring Bean的生命周期图](\develop_framework\Spring\img\SpringBean生命周期.jpg)
+![Spring Bean的生命周期图](/develop_framework/Spring/img/SpringBean生命周期.jpg)
 如果想要学习更加细节的代码操作, 可以参考这篇文章[https://yemengying.com/2016/07/14/spring-bean-life-cycle/ ](https://yemengying.com/2016/07/14/spring-bean-life-cycle/ )
