@@ -130,3 +130,28 @@ Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初
 * 当要销毁Bean的时候, 如果Bean在配置文件中定义包含`destory-method`属性, 执行指定的方法。
 ![Spring Bean的生命周期图](/develop_framework/Spring/img/SpringBean生命周期.jpg)
 如果想要学习更加细节的代码操作, 可以参考这篇文章[https://yemengying.com/2016/07/14/spring-bean-life-cycle/ ](https://yemengying.com/2016/07/14/spring-bean-life-cycle/ )
+
+
+### 6. 自动装配
+
+装配在[Spring](/develop_framework/Spring/Spring.md)中说过, 创建应用组件之间关联的行为通常称为装配。**现在你可以理解为, Bean与Bean之间关联起来叫做装配。自动装配: 就是Spring容器自动找到Bean之间的关联, 并给Bean装配与其关联的属性。**
+
+自动装配的方式有4中: 
+* no: 表示关闭自动装配。
+* byName: 根据Bean名称进行自动装配。 
+* byType: 根据Bean的类型自动装配。
+* constructor: 根据构造函数自动装配。
+
+实现自动装配的方法常用的有两种: XML配置文件, 基于Java的注解。这里只介绍注解方式
+
+> 谈谈你对**注解式自动装配**的理解?
+
+首先我们要知道的是, 注解只起到标识作用, 没有实际的操作。所以对某一属性上使用`@Autowired`时, 表示要将这个Bean的引用作为当前类的属性, 所以当Spring容器启动时, 会找到带有`@Autowired`的注解Bean, 将其装配。
+
+> 谈谈`@Autowired`的用法?
+`@Autowired`在属性和setter方法上使用时, 是通过`byType`进行自动装配; 在Bean的构造函数上使用`@Autowired`时, 是通过`constructor`进行自动装配。当存在多个相同类型或名称的Bean时, 就要用`@Qualifier`指定Bean的名称。
+
+> `@Autowired`与`@Resource`的区别?
+`@Resource`的作用相当于`@Autowired`, 用法也大致相同。不同点:
+* `@Autowired`是Spring的注解, `@Resource`是jdk1.6开始支持的注解。
+* `@Autowired`默认按照Bean的类型自动装配, `@Resource`默认按照Bean名称自动装配(这也是最主要的区别)
