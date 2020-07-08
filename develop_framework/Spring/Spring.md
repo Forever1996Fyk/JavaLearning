@@ -103,7 +103,7 @@ Spring官网列出的Spring的6个特征:
         * AOP是针对业务处理过程中的某个步骤, 或者阶段, 降低业务逻辑各部分之间的耦合性。
         举一个例子, 银行取钱。 这一行为涉及到的取钱人, 办理人, 经理等等业务实体, 以及他们的行为, 所具有的属性, 肯定是用过OOP方式进行设计; 而进入银行需要权限验证, 这一动作或者步骤, 是AOP的领域。
 
-    AOP具体的原理实现会在[Spring AOP](develop_framework/Spring/Spring_AOP.md)中进行分析。
+    AOP具体的原理实现会在[Spring AOP](/develop_framework/Spring/Spring_AOP.md)中进行分析。
 
 
     
