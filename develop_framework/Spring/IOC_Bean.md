@@ -149,9 +149,11 @@ Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初
 首先我们要知道的是, 注解只起到标识作用, 没有实际的操作。所以对某一属性上使用`@Autowired`时, 表示要将这个Bean的引用作为当前类的属性, 所以当Spring容器启动时, 会找到带有`@Autowired`的注解Bean, 将其装配。
 
 > 谈谈`@Autowired`的用法?
+
 `@Autowired`在属性和setter方法上使用时, 是通过`byType`进行自动装配; 在Bean的构造函数上使用`@Autowired`时, 是通过`constructor`进行自动装配。当存在多个相同类型或名称的Bean时, 就要用`@Qualifier`指定Bean的名称。
 
 > `@Autowired`与`@Resource`的区别?
+
 `@Resource`的作用相当于`@Autowired`, 用法也大致相同。不同点:
 * `@Autowired`是Spring的注解, `@Resource`是jdk1.6开始支持的注解。
 * `@Autowired`默认按照Bean的类型自动装配, `@Resource`默认按照Bean名称自动装配(这也是最主要的区别)
