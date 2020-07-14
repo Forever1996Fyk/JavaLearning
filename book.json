@@ -7,9 +7,6 @@
     "styles": {
         "website": "./styles/website.css"
     },
-    "structure": {
-        "readme": "README.md"
-    },
     "links": {
         "sidebar": {
             "我的博客": "https://www.cnblogs.com/FanJava/"
