@@ -45,6 +45,7 @@ Spring框架中, 事务管理相关的最重要的3个接口:
 - `TransactionStatus`: 事务运行状态。
 
 > 简单的说下Spring事务管理的机制?(我觉得说下核心的三个接口, 以及每个接口的用户的关系即可)
+
 `PlatformTransactionManager`会根据`TransactionDefinition`的定义, 比如事务超时时间, 隔离级别, 传播行为等来进行事务管理, 而`TransactionStatus`接口提供方法获取事务
 相应的状态比如是否新事务, 是否可以回滚。
 
