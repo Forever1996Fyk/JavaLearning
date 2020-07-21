@@ -19,6 +19,7 @@ MVC:
 - **Controller(C)**: 控制器, 处理用户交互的部分。通常是从视图中读取数据, 控制用户输入, 并向模型发送数据, 最终有可能在返回视图。
 
 MVC原理图:
+
 ![MVC模式原理图](/develop_framework/Spring/img/MVC模式图.jpg)
 
 > 面试可能会问, 三层架构与MVC之间的关系?
