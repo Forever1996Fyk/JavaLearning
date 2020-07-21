@@ -28,6 +28,7 @@ MVC原理图:
 MVC模式是项目的整体结构, 将后端代码和前台展示代码进行分离。
 
 下图比较清晰的展示了MVC与三层架构的关系:
+
 ![MVC与三层架构的关系图](/develop_framework/Spring/img/MVC与三层架构的关系图.png)
 
 这里面有一点要注意就是这个Model——模型。在这里我的理解是, Model模型是整个项目的基础, 几乎存在于每个部分。所以不管是Controller, View, 还是Service, Dao都属于Model所表达的部分。
