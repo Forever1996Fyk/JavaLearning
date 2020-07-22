@@ -19,5 +19,6 @@
         * [Spring 设计模式](develop_framework/Spring/Spring_DesignModel.md)
         * [Spring MVC工作原理详情(重要)](develop_framework/Spring/SpringMVC.md)
     * [Spring Boot](develop_framework/SpringBoot/SpringBoot.md)
+        * [Spring Boot AutoConfig自动装配](develop_framework/SpringBoot/SpringBoot_AutoConfig.md)
     * [MyBatis](develop_framework/MyBatis.md)
 
