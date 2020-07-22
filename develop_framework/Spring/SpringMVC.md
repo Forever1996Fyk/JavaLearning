@@ -2,6 +2,8 @@
 
 如果用到Spring, 那就不得不提Spring MVC。这两个框架是我们开发学习路程中必不可少的, 即使现在SpringBoot大火, 但仍然是在这两个框架的基础上进行开发的。之前我们已经学习了Spring的核心知识, 所以学习SpringMVC也是紧接着Spring框架。
 
+**Spring MVC是基于Spring实现的MVC框架, 所以必须要使用Spring, 因为SpringMVC需要依赖IOC容器, 对Bean进行管理。**
+
 > 对于Spring MVC与Struts2 两个框架的区别以及选择
 
 其实从现在技术的趋势来看, Spring MVC的使用程度已经远远超过了Struts2。如果一个公司还在使用Struts2框架, 那只能说这个公司的技术栈已经很落后了, 如果是我那是肯定不会去的。再加上SpringBoot的大火, 就更加体现出SpringMVC是更符合开发者的。
@@ -219,3 +221,25 @@ View是一个接口, 实现类支持不同的`View`类型(jsp, freemarker, pdf..
 
 ### 4. SpringMVC与Servlet的关系
 
+> 既然SpringMVC的核心就是Servlet为什么要用SpringMVC, 不用Servlet?
+
+与Spring一样, 使用SpringMVC的目的还是为了简化开发, 让开发者更专注与业务层面的代码, 而不用管视图的控制, 转发等与业务无关的代码。
+
+SpringMVC的核心——前端控制器`DispatcherServlet`, 它的最上层就是Servlet接口。所以SpringMVC最核心的还是Servlet, 只不过它比Servlet的功能更强大。比如: 
+
+1. **请求参数的映射; 文件的上传; 支持各种视图解析器。**
+2. **Servlet只有doGet, doPost, 一个Servlet类只能处理一个url-pattern, 但是SpringMVC可以通过RequestMapping处理很多请求, 并且支持Restful风格**
+
+这里就简单说一下Servlet:
+
+- **什么是Servlet?**
+
+    Servlet是用于处理请求和发送响应的一种应用程序。并且Servlet是为了解决动态页面而衍生出来的东西。
+
+- **Tomcat与Servlet的关系**
+
+    Tomcat是Web应用服务器, 是一个Servlet容器。意思就是Tomcat负责处理客户请求, 把请求传给Servlet, 并将Servlet的响应传回给客户端。
+
+- **Servlet的生命周期**
+
+    服务器启动, 初始化Servlet对象, 调用init()方法 ----> 处理请求, 并响应结果, 调用service()方法 ----> 服务器关闭才会销毁servlet对象, 调用destroy()方法
