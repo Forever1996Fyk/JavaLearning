@@ -20,6 +20,8 @@
         * [Spring MVC工作原理详情(重要)](develop_framework/Spring/SpringMVC.md)
     * [Spring Boot](develop_framework/SpringBoot/SpringBoot.md)
         * [Spring Boot 基础知识](develop_framework/SpringBoot/SpringBoot_Base.md)
+        * [Spring Boot 读取配置文件](develop_framework/SpringBoot/SpringBoot_Read_Configuration.md)
+        * [Spring Boot 异常处理](develop_framework/SpringBoot/SpringBoot_Exception.md)
         * [Spring Boot AutoConfig自动装配](develop_framework/SpringBoot/SpringBoot_AutoConfig.md)
     * [MyBatis](develop_framework/MyBatis.md)
 
