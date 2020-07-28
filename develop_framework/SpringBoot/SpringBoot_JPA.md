@@ -431,6 +431,8 @@ String findPersonNameById(@Param("id") Long id);
 void updatePersonNameById(String name, Long id);
 ```
 
+看到这大家应该知道, 这跟上面的集合查询参数的方法是差不多的, 都是通过自定义SQL来做的, 只不过这里是通过注解将SQL映射到接口中, 上面的方法是通过java代码进行操作。
+
 
 
 

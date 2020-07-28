@@ -35,7 +35,7 @@ public interface Filter {
 3. 用户请求响应结束;
 4. 进行自己的其他操作。
 
-![SpringBoot_filter](/develop_framework/SpringBoot/SpringBoot_Filter.md)
+![SpringBoot_filter](/develop_framework/SpringBoot/img/filter.png)
 
 ### 2. 自定义Filter
 
