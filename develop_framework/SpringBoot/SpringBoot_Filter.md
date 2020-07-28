@@ -36,3 +36,111 @@ public interface Filter {
 4. 进行自己的其他操作。
 
 ![SpringBoot_filter](/develop_framework/SpringBoot/SpringBoot_Filter.md)
+
+### 2. 自定义Filter
+
+有两种方法可以自定义Filter: (1) 实现`javax.Servlet.Filter`接口, 并重写方法; (2) 在过滤器类上加上`@WebFilter`注解, 并提供对应的参数(例如filterName, urlPatterns)
+
+#### 2.1 实现javax.Servlet.Filter接口
+
+`MyFilter.java`:
+
+```java
+@Component
+public class MyFilter implements Filter {
+    private static final Logger logger = LoggerFactory.getLogger(MyFilter.class);
+
+    @Override
+    public void init(FilterConfig filterConfig) {
+        logger.info("初始化过滤器：", filterConfig.getFilterName());
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        //对请求进行预处理
+        logger.info("过滤器开始对请求进行预处理：");
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        String requestUri = request.getRequestURI();
+        System.out.println("请求的接口为：" + requestUri);
+        long startTime = System.currentTimeMillis();
+        //通过 doFilter 方法实现过滤功能
+        filterChain.doFilter(servletRequest, servletResponse);
+        // 上面的 doFilter 方法执行结束后用户的请求已经返回
+        long endTime = System.currentTimeMillis();
+        System.out.println("该用户的请求已经处理完毕，请求花费的时间为：" + (endTime - startTime));
+    }
+
+    @Override
+    public void destroy() {
+        logger.info("销毁过滤器");
+    }
+}
+```
+
+`MyFilterConfig.java`: **在配置类中注册自定义的过滤器**
+
+```java
+@Configuration
+public class MyFilterConfig {
+    @Autowired
+    MyFilter myFilter;
+    @Bean
+    public FilterRegistrationBean<MyFilter> thirdFilter() {
+        FilterRegistrationBean<MyFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+
+        filterRegistrationBean.setFilter(myFilter);
+
+        filterRegistrationBean.setUrlPatterns(new ArrayList<>(Arrays.asList("/api/*")));
+
+        return filterRegistrationBean;
+    }
+}
+```
+
+#### 2.2 通过@WebFilter注解实现自定义Filter
+
+```java
+@WebFilter(filterName = "MyFilterWithAnnotation", urlPatterns = "/api/*")
+public class MyFilterWithAnnotation implements Filter {
+
+   ......
+}
+```
+
+这里要注意, 为了让Spring能够在加载的时候把这个类加载为Bean, 需要在启动类上加上`@ServletComponentScan`注解。
+
+### 3. 定义多个过滤器的执行顺序
+
+> 如果此时我们有两个过滤器, 怎样决定这两个过滤器的顺序?
+
+**在配置类中注册自定义的过滤器, 通过`FilterRegistrationBean`的`setOrder`方法可以决定过滤器的执行顺序**。
+
+```java
+@Configuration
+public class MyFilterConfig {
+    @Autowired
+    MyFilter myFilter;
+
+    @Autowired
+    MyFilter2 myFilter2;
+
+    @Bean
+    public FilterRegistrationBean<MyFilter> setUpMyFilter() {
+        FilterRegistrationBean<MyFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        filterRegistrationBean.setOrder(2);
+        filterRegistrationBean.setFilter(myFilter);
+        filterRegistrationBean.setUrlPatterns(new ArrayList<>(Arrays.asList("/api/*")));
+
+        return filterRegistrationBean;
+    }
+
+    @Bean
+    public FilterRegistrationBean<MyFilter2> setUpMyFilter2() {
+        FilterRegistrationBean<MyFilter2> filterRegistrationBean = new FilterRegistrationBean<>();
+        filterRegistrationBean.setOrder(1);
+        filterRegistrationBean.setFilter(myFilter2);
+        filterRegistrationBean.setUrlPatterns(new ArrayList<>(Arrays.asList("/api/*")));
+        return filterRegistrationBean;
+    }
+}
+```
