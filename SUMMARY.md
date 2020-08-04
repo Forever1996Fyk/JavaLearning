@@ -28,6 +28,5 @@
         * [Spring Boot Interceptor拦截器](develop_framework/SpringBoot/SpringBoot_Interceptor.md)
         * [Spring Boot 异步编程](develop_framework/SpringBoot/SpringBoot_AsynCoding.md)
         * [Spring Boot 参数校验](develop_framework/SpringBoot/SpringBoot_Validator.md)
-
-    * [MyBatis](develop_framework/MyBatis.md)
+    * [MyBatis](develop_framework/Mybatis/MyBatis.md)
 
