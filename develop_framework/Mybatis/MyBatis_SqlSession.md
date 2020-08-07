@@ -56,7 +56,7 @@ public interface SqlSessionFactory {
 }
 ```
 
-![SqlSession&SqlSessionFactory](/develop_framework/Mybatis/img/SqlSession&SqlSessionFactory.png))
+![SqlSession&SqlSessionFactory](/develop_framework/Mybatis/img/SqlSession&SqlSessionFactory.png)
 
 `SqlSession`实现类: `DefaultSqlSession`和`SqlSessionManager`
 
