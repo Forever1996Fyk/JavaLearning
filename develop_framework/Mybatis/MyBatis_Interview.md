@@ -38,4 +38,55 @@ trim|where|set|foreach|if|choose|when|otherwise|bind等。其中`<sql>`为SQL片
 - 动态SQL标签: `trim|where|set|foreach|if|choose|when|otherwise|bind`。
 - 执行原理: 使用OGNL从SQL参数对象中计算表达式的值, 根据表达式的值动态拼接SQL。
 
-### 6. 
+### 6. MyBatis如何将SQL执行结果封装为目标对象并返回? 有哪些映射形式?
+
+- 使用`<resultMap>`标签, 自定义列名和对象属性名之间的映射关系。
+- 使用SQL语言的别名功能, 将列别名定义为对象属性名, 例如`T_NAME as name`。而且不区分大小写, MyBatis会忽略别名大小写
+
+MyBatis通过反射创建对象, 同时使用反射给对象的属性赋值并返回, 如果找不到映射关系的属性, 无法完成赋值。
+
+### 7. MyBatis是否支持延迟加载? 如果支持, 实现原理是什么?
+
+MyBaits仅仅支持对关联对象进行懒加载, 即对子查询的子对象进行懒加载。
+
+MyBatis仅支持`association`关联对象和`collection`关联集合对象的延迟加载。`association`指的是一对一, `collection`指的是一对多查询。在MyBatis中可以配置是否启用延迟加载`lazyLoadingEnabled=true/false`。
+
+延迟加载的原理: 使用cglib创建目标对象的代理, 当调用目标方法时, 进入拦截器方法, 如果发现这个关联对象的值为null, 就会单独的查询关联对象的SQL, 然后调用set方法, 注入关联对象属性的值, 然后在调用get方法。
+
+### 8. MyBatis的XML映射文件中, 不同的XML映射文件, id是否可以重复?
+
+对于不同的XML映射文件, 如果配置了namespace, 那么id是可以重复的; 如果没有配置namespace, id不能重复, 因为namespace不是必须的, 只是最佳使用方法而已。
+
+原因: MyBatis是将namespace+id名作为Map<String, MappedStatement>的key使用, 如果没有namespace, 就只有id, 那么id重复会导致数据相互覆盖。有了namespace, 且namespace不重复, 那么id就可以重复。
+
+### 9. MyBatis如何执行批处理?
+
+使用`BatchExecutor`完成批处理
+
+### 10. MyBaits有哪些Executor执行器?
+
+MyBatis有三种基本的Executor执行器, `SimpleExecutor`, `ReuseExecutor`, `BatchExecutor`。这些Executor都严格限制在SqlSession生命周期范围内。
+
+- **`SimpleExecutor`**: 每执行一次update或select, 就开启一个Statement对象, 用完立刻关闭Statement对象。
+
+- **`ReuseExecutor`**: 执行update或select, 以SQL作为key查找Statement对象, 存在就使用, 不存在就创建, 用完后不关闭Statement对象, 而是放置在Map<String, Statement>内。**换句话说, 就是重复使用Statement对象。**
+
+- **`BatchExecutor`**: 执行update(JDBC批处理不支持select), 将所有SQL都添加到批处理中(addBatch()), 等待统一执行(executeBatch())。批处理中缓存了多个Statement对象, 每个Statement对象都是addBatch()完毕后, 等待依次执行executeBatch()批处理。
+
+### 11. MyBatis如何指定一种Executor执行器?
+
+在MyBatis配置属性中, 可以指定默认的ExecutorType执行器类型, 也可以手动给`DefaultSqlSessionFactory`的创建`SqlSession`的方法传递ExecutorType类型参数。
+
+### 12. 简述MyBatis的XML映射文件和MyBatis内部数据结构之间的映射关系?
+
+在XML映射文件中,
+- `<parameterMap>`标签会被解析为`ParameterMap`对象, 每个子元素被解析成`ParameterMapping`对象。
+
+- `<resultMap>`标签会被解析为`ResultMap`对象, 每个子元素会被解析为`ResultMapping`对象。
+
+- 每一个`<select>, <insert>, <update>, <delete>`标签会被解析为`MappedStatement`对象, 标签内的SQL会被解析为`BoundSQL`对象。
+
+### 13. 为什么说MyBatis是半自动的ORM映射工具? 它与全自动的区别在哪里?
+
+- MyBatis在查询关联对象或者关联集合对象时, 需要手动编写SQL来完成, 所以称为半自动ORM映射框架
+- Hibernate查询关联对象或者关联集合对象, 可以根据对象关系模型直接获取数据。
