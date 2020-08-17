@@ -33,6 +33,9 @@
         * [MyBatis SqlSession](develop_framework/Mybatis/MyBatis_SqlSession.md)
         * [MyBatis 自动映射](develop_framework/Mybatis/MyBatis_AutoMapping.md)
         * [MyBatis 面试题集锦](develop_framework/Mybatis/MyBatis_Interview.md)
-    * [Netty]()
-    * [Activiti]()
+    * [Netty](README.md)
+    * [Activiti](README.md)
+* [分布式](distributed/base.md)
+    * [RPC框架](distributed/RPC/rpc_base.md)
+        * [Dubbo](distributed/RPC/dubbo.md)
 
