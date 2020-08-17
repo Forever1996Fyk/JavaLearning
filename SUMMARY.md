@@ -37,5 +37,5 @@
     * [Activiti](README.md)
 * [分布式](distributed/base.md)
     * [RPC框架](distributed/RPC/rpc_base.md)
-        * [Dubbo](distributed/RPC/dubbo.md)
+        * [Dubbo](distributed/RPC/rpc_dubbo.md)
 
