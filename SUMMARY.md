@@ -37,5 +37,10 @@
     * [Activiti](README.md)
 * [分布式](distributed/base.md)
     * [RPC框架](distributed/RPC/rpc_base.md)
-        * [Dubbo](distributed/RPC/rpc_dubbo.md)
+        * [Dubbo原理与机制](distributed/RPC/Dubbo/dubbo_base.md)
+            * [Dubbo 原理](distributed/RPC/Dubbo/dubbo_principle.md)
+            * [Dubbo SPI优化ExtensionLoader](distributed/RPC/Dubbo/dubbo_extensionLoader.md)
+            * [Dubbo 服务暴露](distributed/RPC/Dubbo/dubbo_service_exposed.md)
+            * [Dubbo 服务引用](distributed/RPC/Dubbo/dubbo_service_reference.md)
+            * [Dubbo 微内核+插件](distributed/RPC/Dubbo/dubbo_microkernel_plugin.md)
 
