@@ -32,6 +32,7 @@ public void onApplicationEvent(ApplicationEvent event) {
 }
 ```
 
+
 ### 2. 延迟暴露
 
 `ServiceBean`扩展了`ServiceConfig`, 调用export()方法时由`ServiceConfig`完成服务暴露功能的实现。
@@ -96,6 +97,9 @@ private void doExportUrls() {
 }
 ```
 
+通过`loadRegistries`加载注册中心链接, 然后遍历`ProtocolConfig`集合导出每个服务, 并在导出服务的过程中将服务注册到注册中心。
+
+
 ### 5. 组装URL
 
 针对每个协议，每个注册中心, 开始组装URL。
@@ -137,7 +141,7 @@ private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> r
 
 ### 6. 本地暴露
 
-如果配置`scope=none`, 则不会进行服务暴露; 如果没有配置scope或者`scope=local`, 则会进行本地暴露。
+如果配置`scope=none`, 则不会进行服务暴露; 如果`scope!=remote`, 则会进行本地暴露。
 
 > 暴露服务时, 会通过代理创建`Invoker`;
 > 本地暴露时使用`injvm`协议, `injvm`协议是一个伪协议, 它不开启端口, 不能被远程调用, 只在JVM内直接关联, 但执行Duboo的Filter链。
@@ -179,7 +183,7 @@ private void exportLocal(URL url) {
 
 ### 7. 远程暴露
 
-如果配置scope=remote, 则会进行远程暴露。
+如果配置`scope!=local`, 则会进行远程暴露。
 
 
 在服务暴露时, 有两种情况:

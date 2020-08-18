@@ -30,8 +30,3 @@ Java也有SPI机制, 可以做到服务发现和动态扩展, 但是弊端就是
 ### 4. Dubbo服务引用
 
 [Dubbo_Service_Reference](/distributed/RPC/Dubbo/dubbo_service_reference.md)
-
-### 5. Dubbo "微内核+插件"机制
-
-[Dubbo_Microkernel_Plugin](/distributed/RPC/Dubbo/dubbo_microkernel_plugin.md)
-

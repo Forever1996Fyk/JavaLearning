@@ -42,5 +42,7 @@
             * [Dubbo SPI优化ExtensionLoader](distributed/RPC/Dubbo/dubbo_extensionLoader.md)
             * [Dubbo 服务暴露](distributed/RPC/Dubbo/dubbo_service_exposed.md)
             * [Dubbo 服务引用](distributed/RPC/Dubbo/dubbo_service_reference.md)
-            * [Dubbo 微内核+插件](distributed/RPC/Dubbo/dubbo_microkernel_plugin.md)
+            * [Dubbo 集群容错](distributed/RPC/Dubbo/dubbo_cluster.md)
+            * [Dubbo 负载均衡](distributed/RPC/Dubbo/dubbo_loadbalance.md)
+            * [Dubbo 相关面试](distributed/RPC/Dubbo/dubbo_interview.md)
 

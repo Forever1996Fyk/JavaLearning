@@ -30,3 +30,95 @@ Dubbo也可以运用在微服务系统中, 只不过由于Spring Cloud在微服�
 - 服务提供者全部宕机, 服务消费者应用将无法使用, 并无限次重连等待服务提供者恢复。
 - 注册中心和监控中心全部宕机, 不影响已运行的提供者和消费者, 消费者在本地缓存了提供者列表。
 - 注册中心通过长连接感知服务提供者的存在, 服务提供者宕机, 注册中心将立即推送事件通知消费者。
+
+### 3. Dubbo SPI
+
+SPI(Service Provider Interface), 是一种服务发现机制。SPI的本质是将接口实现类的全限定名配置在文件中, 并由服务加载器读取配置文件, 加载实现类。这样可以在运行时, 动态为接口替换实现类。
+
+具体相关`ExtensionLoader`原理, 会在[Dubbo_ExtensionLoader](/distributed/RPC/Dubbo/dubbo_extensionLoader.md)中解释
+
+#### 3.1 Java SPI实例
+
+先定义一个接口
+
+```java
+public interface Robot {
+    void sayHello();
+}
+```
+
+定义两个实现类, 实现这个接口
+
+```java
+public class OptimusPrime implements Robot {
+    
+    @Override
+    public void sayHello() {
+        System.out.println("Hello, I am Optimus Prime.");
+    }
+}
+
+public class Bumblebee implements Robot {
+
+    @Override
+    public void sayHello() {
+        System.out.println("Hello, I am Bumblebee.");
+    }
+}
+```
+
+在`NETA-INF/services`文件夹下创建一个文件, 名称为Robot的全限定名`org.apache.spi.Robot`。文件内容为实现类的全限定的类名:
+
+```properties
+org.apache.spi.OptimusPrime
+org.apache.spi.Bumblebee
+```
+
+测试:
+
+```java
+public class JavaSPITest {
+
+    @Test
+    public void sayHello() throws Exception {
+        ServiceLoader<Robot> serviceLoader = ServiceLoader.load(Robot.class);
+        System.out.println("Java SPI");
+        serviceLoader.forEach(Robot::sayHello);
+    }
+}
+
+// 结果:
+
+Java SPI 
+Hello, I am Optimus Prime.
+Hello, I an Bumlebee.
+```
+
+#### 3.2 Dubbo SPI示例
+
+Dubbo SPI的相关逻辑封装在`ExtensionLoader`类中, 通过`ExtensionLoader`可以加载指定的实现类。Dubbo SPI所需的配置文件需要放置在`META-INF/dubbo`路径下,
+
+Dubbo SPI实现类胚子通过键值对的方式进行配置, 而且需要对接口标注`@SPI`注解
+
+```properties
+optimusPrime = org.apache.spi.OptimusPrime
+bumblebee = org.apache.spi.Bumblebee
+```
+
+测试
+
+```java
+public class DubboSPITest {
+
+    @Test
+    public void sayHello() throws Exception {
+        ExtensionLoader<Robot> extensionLoader = 
+            ExtensionLoader.getExtensionLoader(Robot.class);
+        Robot optimusPrime = extensionLoader.getExtension("optimusPrime");
+        optimusPrime.sayHello();
+        Robot bumblebee = extensionLoader.getExtension("bumblebee");
+        bumblebee.sayHello();
+    }
+}
+```
+

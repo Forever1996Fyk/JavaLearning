@@ -24,94 +24,167 @@ consistenthash=com.alibaba.dubbo.rpc.cluster.loadbalance.ConsistentHashLoadBalan
 
 ### 2. 获取扩展点
 
+先检查缓存中是否存在扩展对象, 如果不存在,则创建扩展对象。
+
 ``` java
-    //根据名字获取扩展点实例
-    public T getExtension(String name) {
-        if (name == null || name.length() == 0)
-            throw new IllegalArgumentException("Extension name == null");
-        if ("true".equals(name)) {
-            return getDefaultExtension();
-        }
-        Holder<Object> holder = cachedInstances.get(name);
-        if (holder == null) {
-            cachedInstances.putIfAbsent(name, new Holder<Object>());
-            holder = cachedInstances.get(name);
-        }
-        Object instance = holder.get();
-        if (instance == null) {
-            synchronized (holder) {
-                instance = holder.get();
-                if (instance == null) {
-                    instance = createExtension(name);
-                    holder.set(instance);
-                }
-            }
-        }
-        return (T) instance;
+//根据名字获取扩展点实例
+public T getExtension(String name) {
+    if (name == null || name.length() == 0)
+        throw new IllegalArgumentException("Extension name == null");
+    if ("true".equals(name)) {
+        return getDefaultExtension();
     }
-
-    //实例化扩展点
-    private T createExtension(String name) {
-        Class<?> clazz = getExtensionClasses().get(name);
-        if (clazz == null) {
-            throw findException(name);
-        }
-        try {
-            T instance = (T) EXTENSION_INSTANCES.get(clazz);
+    Holder<Object> holder = cachedInstances.get(name);
+    if (holder == null) {
+        cachedInstances.putIfAbsent(name, new Holder<Object>());
+        holder = cachedInstances.get(name);
+    }
+    Object instance = holder.get();
+    if (instance == null) {
+        synchronized (holder) {
+            instance = holder.get();
             if (instance == null) {
-                EXTENSION_INSTANCES.putIfAbsent(clazz, (T) clazz.newInstance());
-                instance = (T) EXTENSION_INSTANCES.get(clazz);
-            }
-            injectExtension(instance);
-            Set<Class<?>> wrapperClasses = cachedWrapperClasses;
-            if (wrapperClasses != null && wrapperClasses.size() > 0) {
-                for (Class<?> wrapperClass : wrapperClasses) {
-                    instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
-                }
-            }
-            return instance;
-        } catch (Throwable t) {
-            throw new IllegalStateException("Extension instance(name: " + name + ", class: " +
-                    type + ")  could not be instantiated: " + t.getMessage(), t);
-        }
-    }
-
-    private Map<String, Class<?>> getExtensionClasses() {
-        Map<String, Class<?>> classes = cachedClasses.get();
-        if (classes == null) {
-            synchronized (cachedClasses) {
-                classes = cachedClasses.get();
-                if (classes == null) {
-                    classes = loadExtensionClasses();
-                    cachedClasses.set(classes);
-                }
+                instance = createExtension(name);
+                holder.set(instance);
             }
         }
-        return classes;
+    }
+    return (T) instance;
+}
+```
+
+#### 2.1 创建扩展对象
+
+`createExtension`方法逻辑为: 
+1. 通过`getExtensionClasses`获取所有扩展类
+2. 通过反射创建扩展对象
+3. 向扩展对象注入依赖
+4. 将扩展对象包装在相应的Wrapper对象中
+
+```java
+private T createExtension(String name) {
+    // 从配置文件中加载所有的拓展类，可得到“配置项名称”到“配置类”的映射关系表
+    Class<?> clazz = getExtensionClasses().get(name);
+    if (clazz == null) {
+        throw findException(name);
+    }
+    try {
+        T instance = (T) EXTENSION_INSTANCES.get(clazz);
+        if (instance == null) {
+            // 通过反射创建实例
+            EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
+            instance = (T) EXTENSION_INSTANCES.get(clazz);
+        }
+        // 向实例中注入依赖
+        injectExtension(instance);
+        Set<Class<?>> wrapperClasses = cachedWrapperClasses;
+        if (wrapperClasses != null && !wrapperClasses.isEmpty()) {
+            // 循环创建 Wrapper 实例
+            for (Class<?> wrapperClass : wrapperClasses) {
+                // 将当前 instance 作为参数传给 Wrapper 的构造方法，并通过反射创建 Wrapper 实例。
+                // 然后向 Wrapper 实例中注入依赖，最后将 Wrapper 实例再次赋值给 instance 变量
+                instance = injectExtension(
+                    (T) wrapperClass.getConstructor(type).newInstance(instance));
+            }
+        }
+        return instance;
+    } catch (Throwable t) {
+        throw new IllegalStateException("...");
+    }
+}
+```
+
+#### 2.2 获取所有的扩展类
+
+在获取扩展类之前, 先需要根据配置文件解析出扩展项名称与扩展类的映射关系表(`Map<名称, 扩展类>`), 之后再根据扩展项名称从映射关系中取出对应的扩展类即可。
+
+所以代码逻辑还是先检查缓存是否存在, 如果缓存为空, 则通过`synchronized`加锁。加锁之后再次判断缓存是否为空, 如果获取出的map仍然为空则通过`loadExtensionClasses`加载扩展类。
+
+`loadExtensionClasses`方法主要对SPI注解进行解析, 而且调用`loadDirectory`方法加载指定文件夹配置文件。而`loadDirectory`方法通过`loadResource`方法加载资源。
+```java
+private Map<String, Class<?>> getExtensionClasses() {
+    // 从缓存中获取已加载的拓展类
+    Map<String, Class<?>> classes = cachedClasses.get();
+    // 双重检查
+    if (classes == null) {
+        synchronized (cachedClasses) {
+            classes = cachedClasses.get();
+            if (classes == null) {
+                // 加载拓展类
+                classes = loadExtensionClasses();
+                cachedClasses.set(classes);
+            }
+        }
+    }
+    return classes;
+}
+```
+
+**`loadResource`方法: 用于读取和解析配置文件, 并通过反射加载类, 最后调用`loadClasses`方法将类加入缓存中** 
+
+```java
+private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, 
+    Class<?> clazz, String name) throws NoSuchMethodException {
+    
+    if (!type.isAssignableFrom(clazz)) {
+        throw new IllegalStateException("...");
     }
 
-    //从配置文件中加载扩展点
-    private Map<String, Class<?>> loadExtensionClasses() {
-        final SPI defaultAnnotation = type.getAnnotation(SPI.class);
-        if(defaultAnnotation != null) {
-            String value = defaultAnnotation.value();
-            if(value != null && (value = value.trim()).length() > 0) {
-                String[] names = NAME_SEPARATOR.split(value);
-                if(names.length > 1) {
-                    throw new IllegalStateException("more than 1 default extension name on extension " + type.getName()
-                            + ": " + Arrays.toString(names));
-                }
-                if(names.length == 1) cachedDefaultName = names[0];
-            }
+    // 检测目标类上是否有 Adaptive 注解
+    if (clazz.isAnnotationPresent(Adaptive.class)) {
+        if (cachedAdaptiveClass == null) {
+            // 设置 cachedAdaptiveClass缓存
+            cachedAdaptiveClass = clazz;
+        } else if (!cachedAdaptiveClass.equals(clazz)) {
+            throw new IllegalStateException("...");
         }
         
-        Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
-        loadFile(extensionClasses, DUBBO_INTERNAL_DIRECTORY);
-        loadFile(extensionClasses, DUBBO_DIRECTORY);
-        loadFile(extensionClasses, SERVICES_DIRECTORY);
-        return extensionClasses;
+    // 检测 clazz 是否是 Wrapper 类型
+    } else if (isWrapperClass(clazz)) {
+        Set<Class<?>> wrappers = cachedWrapperClasses;
+        if (wrappers == null) {
+            cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
+            wrappers = cachedWrapperClasses;
+        }
+        // 存储 clazz 到 cachedWrapperClasses 缓存中
+        wrappers.add(clazz);
+        
+    // 程序进入此分支，表明 clazz 是一个普通的拓展类
+    } else {
+        // 检测 clazz 是否有默认的构造方法，如果没有，则抛出异常
+        clazz.getConstructor();
+        if (name == null || name.length() == 0) {
+            // 如果 name 为空，则尝试从 Extension 注解中获取 name，或使用小写的类名作为 name
+            name = findAnnotationName(clazz);
+            if (name.length() == 0) {
+                throw new IllegalStateException("...");
+            }
+        }
+        // 切分 name
+        String[] names = NAME_SEPARATOR.split(name);
+        if (names != null && names.length > 0) {
+            Activate activate = clazz.getAnnotation(Activate.class);
+            if (activate != null) {
+                // 如果类上有 Activate 注解，则使用 names 数组的第一个元素作为键，
+                // 存储 name 到 Activate 注解对象的映射关系
+                cachedActivates.put(names[0], activate);
+            }
+            for (String n : names) {
+                if (!cachedNames.containsKey(clazz)) {
+                    // 存储 Class 到名称的映射关系
+                    cachedNames.put(clazz, n);
+                }
+                Class<?> c = extensionClasses.get(n);
+                if (c == null) {
+                    // 存储名称到 Class 的映射关系
+                    extensionClasses.put(n, clazz);
+                } else if (c != clazz) {
+                    throw new IllegalStateException("...");
+                }
+            }
+        }
     }
-
+}
 ```
 
 ### 3. Setter 注入扩展点 & Wrapper 包装扩展点
@@ -291,5 +364,45 @@ public interface LoadBalance {
 @Activate(group = Constants.CONSUMER)
 public class AsyncFilter implements Filter{
 
+}
+```
+
+### 5 Dubbo IOC
+
+Dubbo IOC是通过setter方法注入依赖。Dubbo会通过反射获取到实例的所有方法, 然后遍历方法列表, 检测方法名是否具有setter方法特性, 如果有则通过`ObjectFactory`获取依赖对象, 最后通过反射调用setter方法将依赖设置到目标对象中。
+
+```java
+private T injectExtension(T instance) {
+    try {
+        if (objectFactory != null) {
+            // 遍历目标类的所有方法
+            for (Method method : instance.getClass().getMethods()) {
+                // 检测方法是否以 set 开头，且方法仅有一个参数，且方法访问级别为 public
+                if (method.getName().startsWith("set")
+                    && method.getParameterTypes().length == 1
+                    && Modifier.isPublic(method.getModifiers())) {
+                    // 获取 setter 方法参数类型
+                    Class<?> pt = method.getParameterTypes()[0];
+                    try {
+                        // 获取属性名，比如 setName 方法对应属性名 name
+                        String property = method.getName().length() > 3 ? 
+                            method.getName().substring(3, 4).toLowerCase() + 
+                            	method.getName().substring(4) : "";
+                        // 从 ObjectFactory 中获取依赖对象
+                        Object object = objectFactory.getExtension(pt, property);
+                        if (object != null) {
+                            // 通过反射调用 setter 方法设置依赖
+                            method.invoke(instance, object);
+                        }
+                    } catch (Exception e) {
+                        logger.error("fail to inject via method...");
+                    }
+                }
+            }
+        }
+    } catch (Exception e) {
+        logger.error(e.getMessage(), e);
+    }
+    return instance;
 }
 ```
