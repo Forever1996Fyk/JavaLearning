@@ -13,3 +13,13 @@ Dubbo提供多种集群实现, 包含但不限于`Failover Cluster`、`Failfast 
 ### 1. 集群容错
 
 ![集群](/distributed/RPC/img/cluster.jpg)
+
+Dubbo主要提供5中容错方式:
+
+- Failover Cluster - 失败自动切换
+- Failfast Cluster - 快速失败
+- Failsafe Cluster - 失败安全
+- Failback Cluster - 失败自动恢复
+- Forking Cluster - 并行调用多个服务提供者
+
+### 2. 

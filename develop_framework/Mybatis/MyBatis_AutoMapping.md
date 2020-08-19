@@ -193,7 +193,7 @@ private void bindMapperForNamespace() {
 
 MyBatis的namespace有两个功能:
 
-1. 作为命名空间使用。namespace + id, 技能找到对应的SQL。
+1. 作为命名空间使用。namespace + id, 就能找到对应的SQL。
 2. 作为Mapper接口的全限名使用, 通过namespace, 就能找到对应的Mapper接口。
 
 
