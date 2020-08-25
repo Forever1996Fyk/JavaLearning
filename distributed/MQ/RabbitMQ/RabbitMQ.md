@@ -47,3 +47,9 @@ Rabbit队列和交换器在默认情况下重启服务会导致消息丢失, 解
 - 多个vhost是隔离的, 多个vhost无法通讯, 并且不用担心命名冲突, 实现了多层分离。
 - 创建用户时必须指定vhost。
 
+#### 2.3 Broker(消息中间件的服务节点)
+
+对于RabbitMQ来说, 一个RabbitMQ Broker可以看做一个RabbitMQ服务节点, 获取Rabbit服务实例。
+
+![rabbit_broker](/distributed/MQ/img/rabbit_broker.png)
+
