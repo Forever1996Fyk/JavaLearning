@@ -46,4 +46,10 @@
             * [Dubbo 负载均衡](distributed/RPC/Dubbo/dubbo_loadbalance.md)
             * [Dubbo 相关面试](distributed/RPC/Dubbo/dubbo_interview.md)
         * [ZooKeeper原理](distributed/RPC/ZooKeeper/zookeeper_base.md)
+    * [消息队列MQ](distributed/MQ/message_queue.md)
+        * [RabbitMQ](distributed/MQ/RabbitMQ/RabbitMQ.md)
+            * [RabbitMQ 交换器 Exchange](distributed/MQ/RabbitMQ/RabbitMQ_Exchange.md)
+            * [RabbitMQ事务与Confirm消息确认机制](distributed/MQ/RabbitMQ/RabbitMQ_Tx_Confirm.md)
+        * [RocketMQ](distributed/MQ/RocketMQ/RocketMQ.md)
+            * [RocketMQ架构](distributed/MQ/RocketMQ/RocketMQ_Architecture.md)
 
