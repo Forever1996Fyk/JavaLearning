@@ -53,5 +53,14 @@
         * [RocketMQ](distributed/MQ/RocketMQ/RocketMQ.md)
             * [RocketMQ架构](distributed/MQ/RocketMQ/RocketMQ_Architecture.md)
             * [RocketMQ相关问题](distributed/MQ/RocketMQ/RocketMQ_Q&A.md)
-        * [Kafka](distributed/MQ/RocketMQ/Kafka.md)
+        * [Kafka](distributed/MQ/Kafka/Kafka.md)
+    * [分布式事务](distributed/Distribute_Transation/Distribute_Transation.md)
+    * [分布式id](distributed/Distribute_ID/Distribute_ID.md)
+    * [分布式限流](distributed/Distribute_Limit/Distribute_Limit.md)
+    * [ElasticSearch](distributed/ElasticSearch/ElasticSearch.md)
+    * [API网关](distributed/API_Gateway/API_Gateway.md)
+    * [数据库扩展](distributed/DataBase/DataBase_Expand.md)
+* [Spring Cloud]()
+* [认证授权]()
+
 
