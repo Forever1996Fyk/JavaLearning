@@ -52,4 +52,6 @@
             * [RabbitMQ事务与Confirm消息确认机制](distributed/MQ/RabbitMQ/RabbitMQ_Tx_Confirm.md)
         * [RocketMQ](distributed/MQ/RocketMQ/RocketMQ.md)
             * [RocketMQ架构](distributed/MQ/RocketMQ/RocketMQ_Architecture.md)
+            * [RocketMQ相关问题](distributed/MQ/RocketMQ/RocketMQ_Q&A.md)
+        * [Kafka](distributed/MQ/RocketMQ/Kafka.md)
 
