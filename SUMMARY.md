@@ -60,7 +60,8 @@
     * [ElasticSearch](distributed/ElasticSearch/ElasticSearch.md)
     * [API网关](distributed/API_Gateway/API_Gateway.md)
     * [数据库扩展](distributed/DataBase/DataBase_Expand.md)
+* [认证授权](distributed/Authorization_Authenticate/Authorization_Authenticate.md)
 * [Spring Cloud]()
-* [认证授权]()
+
 
 
