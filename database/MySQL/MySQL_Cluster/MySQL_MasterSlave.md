@@ -44,7 +44,7 @@
     log-bin=mysql-bin
     ```
 
-     具体参考[binlog详解](/database/MySQL/MySQL_Cluster/MySQL_Binlog.md)
+     具体参考[binlog详解](database/MySQL/MySQL_Cluster/MySQL_Binlog.md)
 
 4. 重启Master服务
 
