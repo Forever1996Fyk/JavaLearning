@@ -30,7 +30,7 @@ reset master
 
 如果根据上面的命令发现binlog并未开启, 那么需要手动开启binlog日志。
 
-找到MySQL服务的`my.cnf`主配置文件, 添加三行:
+找到MySQL服务的`my.cnf`主配置文件, 添加两行:
 
 ```shell
 server-id=123456 # 这个服务id, 不能喝其他集群中机器重复。
