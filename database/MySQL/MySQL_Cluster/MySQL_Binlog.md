@@ -33,7 +33,7 @@ reset master
 找到MySQL服务的`my.cnf`主配置文件, 添加两行:
 
 ```shell
-server-id=123456 # 这个服务id, 不能喝其他集群中机器重复。
+server-id=123456 # 这个服务id, 不能和其他集群中机器重复。
 log-bin=/var/lib/mysql/mysql-bin # 这是指定binlog文件存放的路径
 ```
 

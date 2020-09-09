@@ -70,6 +70,7 @@
         * [MySQL集群](database/MySQL/MySQL_Cluster/MySQL_Cluster.md)
             * [MySQL主从复制](database/MySQL/MySQL_Cluster/MySQL_MasterSlave.md)
             * [Binlog详解](database/MySQL/MySQL_Cluster/MySQL_Binlog.md)
+            * [MySQL分库分表](database/MySQL/MySQL_Cluster/MySQL_SubDB_SubTable.md)
 
 
 
