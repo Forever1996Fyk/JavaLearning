@@ -137,3 +137,8 @@
 
 这个操作跟Master节点一样
 
+### 4. 主主复制
+
+具体可在[MySQL主主复制](MySQL_Master&Master.md)中查看
+
+
