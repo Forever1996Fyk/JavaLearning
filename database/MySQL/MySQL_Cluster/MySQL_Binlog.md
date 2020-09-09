@@ -49,6 +49,6 @@ service mysqld restart
 show variables like '%log_bin%'
 ```
 
-![binlog_start](/database/MySQL/MySQL_Cluster/images\binlog_start.png)
+![binlog_start](/database/MySQL/MySQL_Cluster/images/binlog_start.png)
 
 也可以定位到我们配置的文件目录下查看是否存在binlog文件
