@@ -71,6 +71,9 @@
             * [MySQL主从复制](database/MySQL/MySQL_Cluster/MySQL_MasterSlave.md)
             * [Binlog详解](database/MySQL/MySQL_Cluster/MySQL_Binlog.md)
             * [MySQL分库分表](database/MySQL/MySQL_Cluster/MySQL_SubDB_SubTable.md)
+        * [MyCat](database/MySQL/MySQL_Cluster/MyCat/MyCat.md)
+            * [MyCat配置](database/MySQL/MySQL_Cluster/MyCat/MyCat_Config.md)
+            * [MyCat分片规则](database/MySQL/MySQL_Cluster/MyCat/MyCat_Rule.md)
 
 
 
