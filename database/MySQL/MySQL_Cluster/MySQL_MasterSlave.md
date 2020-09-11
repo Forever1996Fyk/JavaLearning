@@ -39,7 +39,12 @@
 2. 授权。用户必须具备`replication slave`权限, 除此之外不需要其他的权限。SQL语句为: `grant replication slave on on *.* to 'username'@'host' identified by 'password'`
 
     ```sql
-        grant replication slave on on *.* to 'repl'@'192.168.100.%' identified by 'repl'
+        grant replication slave on *.* to 'repl'@'192.168.100.%' identified by 'repl'
+    ```
+
+    **这里要注意在MySQL8.x版本的语法, 创建用户跟授权方式分开了, 所以在MySQL8.x版本语法如下**
+    ```sql
+        grant replication slave on *.* to 'repl'@'192.168.100.%' 
     ```
 
 3. 开启 **`binlog`日志**
