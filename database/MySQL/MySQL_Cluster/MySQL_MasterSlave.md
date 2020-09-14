@@ -150,6 +150,35 @@
 
 这个操作跟Master节点一样
 
+#### 3.3 docker-compose 配置MySQL主从
+
+这里以MySQl 8.0为例
+
+docker-compose.yml:
+
+```yaml
+version: '3.1'
+services:
+  db:
+    image: mysql:8.0.12
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+    ports:
+      - 3306:3306
+    volumes:
+      - ./data:/var/lib/mysql # 映射mysql容器中的数据卷到宿主机上
+      - ./my.cnf:/etc/mysql/my.cnf # 映射mysql容器中的配置文件到宿主机上
+```
+
+使用`docker-compose up -d`命令启动容器, 后面的配置跟上面3.1步骤相同
+
 ### 4. 主主复制
 
 具体可在[MySQL主主复制](MySQL_Master&Master.md)中查看
