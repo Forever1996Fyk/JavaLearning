@@ -161,3 +161,59 @@ Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初
 `@Resource`的作用相当于`@Autowired`, 用法也大致相同。不同点:
 * `@Autowired`是Spring的注解, `@Resource`是jdk1.6开始支持的注解。
 * `@Autowired`默认按照Bean的类型自动装配, `@Resource`默认按照Bean名称自动装配(这也是最主要的区别)
+
+### 7. Spring处理循环依赖
+
+我们知道Spring IOC容器根据依赖注入的原则实现了控制反转。但是如果有这样一个场景如何解决?
+
+> 当我们注入一个对象A时, 需要注入对象A中标记了某些注解的属性,这些属性也就是对象A的依赖。把对象A中的依赖都初始化完成, 对象A才算是创建完成。如果对象A中有一个属性是对象B, 而对象B中有个属性是对象A, 那么对象A和对象B在Spring中就会产生循环依赖, 如果不作处理, 就会出现**创建对象A --> 处理A的依赖B --> 创建对象B --> 处理B的依赖A --> 创建对象A --> 处理A的依赖B --> 创建对象B....**这样无限的循环下去。
+
+Spring提供了一种方式来处理这种循环依赖。基本思路: **虽然初始化Bean, 必须要注入Bean里的依赖, 才算初始化成功, 但是并不要求Bean中依赖的依赖也要注入成功, 只要依赖对象的构造方法执行完了, 这个依赖对象就算已经存在了, 注入就算成功了, 至于依赖的依赖, 可以在后面继续初始化。所以, 初始化一个Bean, 先调用Bean的构造方法, 这个对象在内存中已经存在了(注意此时对象中的依赖还没有别注入), 然后保存这个对象, 当发生循环依赖时, 直接拿到之前保存的对象, 就不需要在创建对象了, 于是循环依赖就被终止了。**
+
+例如:
+
+> 对象A与对象B是循环依赖的。
+> 1. 创建对象A, 调用A的构造, 并把A保存下来
+> 2. 准备注入对象A的依赖, 发现对象A依赖对象A, 那么开始创建对象B
+> 3. 调用B的构造, 并把B保存下来
+> 4. 准备注入B的构造, 发现B依赖对象A, 对象A之前已经创建了, 直接获取A并把A注入B中(**注意此时的对象A还没有完全注入成功, 对象A中的对象B还没有注入**), 于是B创建成功
+> 5. 把创建成功的B注入A, 于是A也创建成功。
+
+在Spring源码中, 在注入对象的过程中, 调用了这个方法:
+
+```java
+// 这段代码在AbstractBeanFactory类的doGetBean()方法中
+
+/**
+* 返回值Objecy就是要创建的对象, beanName就是要创建的对象的类名
+**/
+Object sharedInstance = this.getSingleton(beanName);
+
+/**
+ * getSingleton具体实现
+ */
+@Nullable
+protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    Object singletonObject = this.singletonObjects.get(beanName);
+    if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+        synchronized (this.singletonObjects) {
+            singletonObject = this.earlySingletonObjects.get(beanName);
+            if (singletonObject == null && allowEarlyReference) {
+                ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
+                if (singletonFactory != null) {
+                    singletonObject = singletonFactory.getObject();
+                    this.earlySingletonObjects.put(beanName, singletonObject);
+                    this.singletonFactories.remove(beanName);
+                }
+            }
+        }
+    }
+    return singletonObject;
+}
+```
+
+根据上面的源码可以看出, 解决循环依赖的关键方法使用三层列表来查询依赖的对象是否存在:
+
+- **`singletonObjects`**
+- **`earlySingletonObjects`**
+- **`singletonFactories`**
