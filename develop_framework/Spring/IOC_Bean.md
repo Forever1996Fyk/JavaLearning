@@ -194,12 +194,34 @@ Object sharedInstance = this.getSingleton(beanName);
  */
 @Nullable
 protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    // 首先从singletonObjecys中获取对象, 当Spring准备创建一个对象时, singletonObjects列表中是没有这个对象的
     Object singletonObject = this.singletonObjects.get(beanName);
+
+    /**
+     * 这里的判断除了判断 singletonObject==null 之外, 还有一个 isSingletonCurrentlyInCreation 的判断。
+     * 因为当Spring初始化一个依赖注入的对象, 但还没注入对象属性的时候, Spring会把这个Bean加入 singletonCurrentlyInCreation这个Set集合中,
+     * 也就是把这个对象标记为正在创建的状态, 这样如果Soring发现要创建的Bean在singletonObjects中没有, 但是 singletonCurrentlyInCreation中存在, 
+     * 基本上就认定为循环依赖(在创建Bean的过程中发现又要创建这个Bean, 说明Bean的某个依赖又依赖了这个Bean)。
+     * 
+     */
     if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
         synchronized (this.singletonObjects) {
+            /**
+             *  这里调用 earlySingletonObjects 列表, 这是为了循环依赖而存在的列表, 
+             * 这是个预创建的对象列表, 刚刚创建的对象一般不会在这个列表里
+             * 
+             */
             singletonObject = this.earlySingletonObjects.get(beanName);
+
+            /**
+             * 如果 earlySingletonObjects列表中也没有则从 singletonFactories 中获取
+             */
             if (singletonObject == null && allowEarlyReference) {
                 ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
+                /**
+                 * 走到这一步基本上就确定我们要创建的对象发生了循环依赖, 然后Spring获取singletonFactory总的对象, 将这个对象加入到
+                 * earlySingletonObjects中, 然后把该对象从 singletonFactories中删除。
+                 */
                 if (singletonFactory != null) {
                     singletonObject = singletonFactory.getObject();
                     this.earlySingletonObjects.put(beanName, singletonObject);
@@ -217,3 +239,53 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 - **`singletonObjects`**
 - **`earlySingletonObjects`**
 - **`singletonFactories`**
+
+**这里要注意的是处理出现依赖时, 对象会先进入`singletonFactories` 然后`earlySingletonObjects`, 然后`singletonObjects`**。
+
+所以按照这个逻辑以及源码, 如果循环依赖, 此时`singletonFactories`中一般会存在目标对象, 例如：
+
+对象A与对象B循环依赖, 初始化对象A(执行构造方法), 还没有注入对象A的依赖时, 就会把A放入`singletonFactories`, 
+然后开始注入A的依赖, 发现对象B, 于是开始初始化B, 将对象B放入`singletonFactories`, 然后开始注入B的依赖, 又会发现A, 
+根据上面的源码解析, 我们知道此时对象A已经在`singletonCurrentlyInCreation`列表中, 所以就会进入if逻辑判断, 不会再创建新的对象A了。
+
+```java
+
+/**
+ * 执行完上面的方法代码之后, 还会执行下面方法的代码, 会把Bean完整的进行初始化和依赖注入, 
+ */
+getSingleton(String beanName, ObjectFactory<?> singletonFactory);
+
+
+/**
+ * getSingleton(String beanName, ObjectFactory<?> singletonFactory)中有一个子方法 addSingleton(String beanName, Object singletonObject)
+ * 
+ * 这个方法处理是已经注入完依赖的Bean, 把Bean放入singletonObjects中, 并把Bean从earlySingletonObjects和singletonFactories中删除, 这个方法和上面的方法组成了
+ * Spring处理循环依赖的逻辑
+ */
+protected void addSingleton(String beanName, Object singletonObject) {
+    synchronized (this.singletonObjects) {
+        this.singletonObjects.put(beanName, singletonObject);
+        this.singletonFactories.remove(beanName);
+        this.earlySingletonObjects.remove(beanName);
+        this.registeredSingletons.add(beanName);
+    }
+}
+```
+
+最后总结一下, Spring处理循环依赖在代码中的实现过程, 如下:
+
+| 步骤 | 操作 | 列表数据变化 |
+| -- | -- | -- | -- |
+| 1 | 初始化对象A | singletonFactories: <br>earlySingletonObjects: <br>singletonObjects: |
+| 2 | 调用A的构造, 把A放入singletonFactories(注意此时没有注入依赖) | singletonFactories: A <br>earlySingletonObjects: <br>singletonObjects: |
+| 3 | 开始注入A的依赖, 发现A依赖对象B | singletonFactories:A <br>earlySingletonObjects: <br>singletonObjects: |
+| 4 | 开始初始化对象B | singletonFactories:A,B <br>earlySingletonObjects: <br>singletonObjects: |
+| 5 | 开始注入B的依赖, 发现B依赖对象A | singletonFactories:A,B <br>earlySingletonObjects: <br>singletonObjects: |
+| 6 | 开始初始化对象A, 发现A在singletonFactories中已存在, 则直接获取A, 把A放入earlySingletonObjects, 并从singletonFactories删除A | singletonFactories:B <br>earlySingletonObjects:A <br>singletonObjects: |
+| 7 | 对象B依赖注入完成 | singletonFactories:B <br>earlySingletonObjects:A <br>singletonObjects: |
+| 8 | 对象B创建完成, 把B放入singletonObjects, 并从singletonFactories,earlySingletonObjects删除B | singletonFactories: <br>earlySingletonObjects:A <br> singletonObjects: B |
+| 9 | 对象B注入给A, 继续注入A的其他依赖, 直到A注入完成 | singletonFactories:  <br>earlySingletonObjects:A <br>singletonObjects: B|
+| 10 | 对象A创建完成, 把A放入singletonObjects, 并从singletonFactories,earlySingletonObjects删除A | singletonFactories:  <br>earlySingletonObjects: <br>singletonObjects: A, B |
+| 11 | 循环依赖处理结束, A和B都初始化和注入完成 | singletonFactories:  <br>earlySingletonObjects: <br>singletonObjects: A, B|
+
+
