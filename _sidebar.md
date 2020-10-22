@@ -8,7 +8,9 @@
         * 多线程
         * I/O流
     * 集合容器
-    * 并发
+    * [并发](java_base/concurrent/start.md)
+        * [基础阶段]()
+            * [线程的基础](java_base/concurrent/base/thread_base.md)
 * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
         * [Spring IOC & Bean](develop_framework/Spring/IOC_Bean.md)

@@ -1,4 +1,4 @@
-## <center>Spring IOC容器</center>
+### Spring IOC容器
 
 Spring容器是Spring Framework的核心。容器将创建对象, 把它们关联一起, 配置对象, 并管理他们的整个生命周期从创建到销毁。Spring容器视同依赖注入(DI)来管理组成一个应用程序的组件。这些对象称为Spring Beans。
 
@@ -11,7 +11,7 @@ IOC容器是具有依赖注入功能的容器, 可以创建对象, IOC容器负�
 
  可以参考这篇文章, 写的很通俗易懂[https://www.zhihu.com/question/23277575/answer/169698662](https://www.zhihu.com/question/23277575/answer/169698662)
 
-### 1. Spring BeanFactory容器
+###  Spring BeanFactory容器
 
 这个Spring中最简单, 最基础的IOC容器, 主要的功能是为依赖注入(DI)提供支持。
 
@@ -20,7 +20,7 @@ IOC容器是具有依赖注入功能的容器, 可以创建对象, IOC容器负�
 > BeanFactory的每个子接口, 以及实现类都有使用的场合, 他主要是为了区分在 Spring 内部对象的传递和转化过程中, 对对象数据访问所做的限制!!!
 
 
-### 2. Spring ApplicationContext容器
+### Spring ApplicationContext容器
 Application Context是BeanFactory的子接口, 也称为Spring上下文。它是Spring中较高级的容器,它能提供更多企业级的服务, 扩展了BeanFactory接口:
     * ApplicationEventPublisher: 事件发布功能。包括容器启动事件, 关闭事件。
     * MessageSource: 为应用提供i18国际化消息访问功能。
@@ -36,7 +36,7 @@ Application Context是BeanFactory的子接口, 也称为Spring上下文。它是
 从ApplicationContext的定义中看出继承很多接口, 所以ApplicationContext就是Spring在运行环境中对BeanFactory, MessageSource..等执行信息的描述。
 这样的话, 不仅仅是ApplicationContext, 还有Spring容器中其他的Context接口, 也是如此。
 
-### 3. Spring Bean定义
+### Spring Bean定义
 Spring中的容器几乎都是以Bean为基础的, 换句话说Spring是将所有组件都当做Bean来进行管理。
 Bean是一个被实例化, 组装并通过Spring IOC容器所管理的对象。
 
@@ -54,7 +54,7 @@ Bean是一个被实例化, 组装并通过Spring IOC容器所管理的对象。
 * 基于注解配置
 * 基于Java的配置
 
-### 4. Spring Bean作用域(重点, 这里是面试高频提问点)
+### Spring Bean作用域(重点, 这里是面试高频提问点)
 > 这是面试常问的问题, Spring中的Bean作用域有哪些?
 
 * singleton: 唯一Bean实例, Spring在每次需要时都返回同一个bean实例, Spring中的Bean默认都是单例的(这是重点, 还会有很多扩展问题, 比如: 单例Bean的线程安全问题)
@@ -114,7 +114,7 @@ Spring中Bean的作用域大多数都是默认单例的, `@Component`, `@Service
 Spring通过ThreadLocal类将有状态的可变成员变量(例如数据库连接Connection)本地线程化, 从而做到线程安全。在一次请求响应的处理线程中, 这个线程贯通Controller, Service, Dao三层, 通过ThreadLocal使得所有关联的对象引用到的都是同一个变量。(事实上这里面还涉及到了Spring事务管理, 这个后面也会解析)
 
 
-### 5. Spring Bean生命周期(重点)
+### Spring Bean生命周期(重点)
 Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初始化——Bean的使用——Bean的销毁
 
 虽然表述简单, 但是这其中有很多步骤的实现。下面就是具体的Spring Bean生命周期:
@@ -136,7 +136,7 @@ Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初
 如果想要学习更加细节的代码操作, 可以参考这篇文章[https://yemengying.com/2016/07/14/spring-bean-life-cycle/ ](https://yemengying.com/2016/07/14/spring-bean-life-cycle/ )
 
 
-### 6. 自动装配
+### 自动装配
 
 装配在[Spring](/develop_framework/Spring/Spring.md)中说过, 创建应用组件之间关联的行为通常称为装配。**现在你可以理解为, Bean与Bean之间关联起来叫做装配。自动装配: 就是Spring容器自动找到Bean之间的关联, 并给Bean装配与其关联的属性。**
 
@@ -162,7 +162,7 @@ Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初
 * `@Autowired`是Spring的注解, `@Resource`是jdk1.6开始支持的注解。
 * `@Autowired`默认按照Bean的类型自动装配, `@Resource`默认按照Bean名称自动装配(这也是最主要的区别)
 
-### 7. Spring处理循环依赖
+### Spring处理循环依赖
 
 我们知道Spring IOC容器根据依赖注入的原则实现了控制反转。但是如果有这样一个场景如何解决?
 
@@ -275,7 +275,7 @@ protected void addSingleton(String beanName, Object singletonObject) {
 最后总结一下, Spring处理循环依赖在代码中的实现过程, 如下:
 
 | 步骤 | 操作 | 列表数据变化 |
-| -- | -- | -- | -- |
+| -- | -- | -- |
 | 1 | 初始化对象A | singletonFactories: <br>earlySingletonObjects: <br>singletonObjects: |
 | 2 | 调用A的构造, 把A放入singletonFactories(注意此时没有注入依赖) | singletonFactories: A <br>earlySingletonObjects: <br>singletonObjects: |
 | 3 | 开始注入A的依赖, 发现A依赖对象B | singletonFactories:A <br>earlySingletonObjects: <br>singletonObjects: |
