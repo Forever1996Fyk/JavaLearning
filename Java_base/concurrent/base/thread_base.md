@@ -127,8 +127,48 @@ public class CreateThread1 {
 > 4. 如果在`running`过程中, 该线程被`blocked`, 例如: `sleep`, 那么此线程处于阻塞状态。如果被`blocked`, 无法立即回到`running`状态, 必须要先到`runnable`状态
 > 5. 在线程在`running`状态正常结束, 或者在`blocked`状态中被打断, 例如: 在`runnable`状态中由于某些原因导致线程死亡, 就会进入终结terminated状态.
 
+### 4. 守护线程
 
-### 4. Thread构造方式
+在说守护线程之前, 先看一个需求: 
 
-`Thread`类有多种构造方法, 可以根据不同的需求创建Thread实例。
+**在建立网络连接时, Client A <-----------> Server B, A与B进行长连接, 在长连接中, A需要不断的向B发送心跳包, 来确认服务是否还正常。也就是说在连接创建好之后, 还需要维护心跳, 而这个心跳跟业务是没有关系的， 跟连接发送报文信息也没有关系, 心跳只是一个维护作用。<font color="red">如果长连接的线程断开了, 那么这个发检测心跳的线程就不需要存在了。这时候就需要设置守护线程</font>**
 
+> 创建连接之后, 在开启了`DaemonThread`守护线程, 用于health check。如果不设置守护线程,那么及时建立连接操作的线程(可能是主线程)已经死了, 但是这个守护线程依然可以存在进行心跳检测, 这样就会造成内存的损耗(因为连接都不存在了, 还要心跳干嘛)。
+
+**<font color="red">所以守护线程, 可以理解为守护主线程的一个线程, 一旦主线程结束了, 不管这个守护线程是不是active, 都直接结束</font>**
+
+```java
+public class DaemonThread {
+
+    public static void main(String[] args) {
+        Thread t = new Thread(() -> {
+            // 在Thread里面再创建一个线程
+            Thread innerThread = new Thread(() -> {
+                try {
+                    while (true) {
+                        System.out.println("Do some thing for health check");
+                        Thread.sleep(1_000);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+
+            innerThread.setDaemon(true); // 如果Daemon设置为true, 就表示, 这个线程时守护线程, 而且必须要在start之前调用。
+            innerThread.start();
+
+            try {
+                Thread.sleep(1_000);
+                System.out.println("T Thread finish done.");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+//        t.setDaemon(true);
+        t.start();
+    }
+}
+```
+
+从上面的代码可以看到, 我们在一个线程Thread内部有创建了一个线程innerThread, 并设置为守护线程`innerThread.setDaemon(true)`。只要外部线程挂了, 那么这个内部线程也会结束。
