@@ -12,6 +12,8 @@
         * [基础阶段]()
             * [线程的基础](java_base/concurrent/base/thread_base.md)
             * [Thread.join](java_base/concurrent/base/thread_join.md)
+            * [自定义线程执行与强制关闭](java_base/concurrent/base/thread_interrupt.md)
+            * [synchronized关键字](java_base/concurrent/base/thread_synchronized.md)
 * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
         * [Spring IOC & Bean](develop_framework/Spring/IOC_Bean.md)
