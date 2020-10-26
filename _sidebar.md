@@ -14,6 +14,7 @@
             * [Thread.join](Java_base/concurrent/base/thread_join.md)
             * [自定义线程执行与强制关闭](Java_base/concurrent/base/thread_interrupt.md)
             * [synchronized关键字](Java_base/concurrent/base/thread_synchronized.md)
+            * [死锁](Java_base/concurrent/base/thread_deadlock.md)
 * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
         * [Spring IOC & Bean](develop_framework/Spring/IOC_Bean.md)

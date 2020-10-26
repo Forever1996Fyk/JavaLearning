@@ -113,4 +113,83 @@ class ThisLock {
 
 同步方法, 没有指定对象时, 此时拿到锁的对象是 **this --> 当前对象的实例**。 但是这就导致了一个问题: 当多个线程去竞争这个this锁, 此时线程Thread0抢到了方法锁, 并且执行方法中的逻辑, 如果这个Thread0 直接处理完里面所有的逻辑, 并且释放锁, 此时Thread1拿到锁时, 发现任务已经被Thread0完成了, 就没必要执行了。**也就是说, 方法锁, 锁的对象时this, 有可能导致只有一个线程在工作, 其他线程在等待锁并且拿到的时候, 什么事都没做, 就结束了, 这样是不合理的。**
 
+### 3. static方法锁
+
+```java
+public class SynchronizedStatic {
+    static {
+        synchronized (SynchronizedStatic.class) {
+            System.out.println("m1 " + Thread.currentThread().getName());
+
+            try {
+                Thread.sleep(10_000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public synchronized static void m1() {
+        System.out.println("m1 " + Thread.currentThread().getName());
+
+        try {
+            Thread.sleep(10_000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized static void m2() {
+        System.out.println("m2 " + Thread.currentThread().getName());
+
+        try {
+            Thread.sleep(10_000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void m3() {
+        System.out.println("m3 " + Thread.currentThread().getName());
+
+        try {
+            Thread.sleep(10_000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+上面的代码`synchronized`关键字修饰的是静态代码块和静态方法, 静态代码块加的锁是class锁, 是对当前class加锁。**所以调用`SynchronizedStatic`的方法时, 先会初始化静态代码块, 然后发现加了锁, 于是第一个线程先执行静态代码块中的逻辑, 执行完成后, 再会去调用对应的方法。对于上面的代码,m1,m2方法是加锁的, m3并没有加锁, 所以几乎会同时调用m3方法, 但是调用m1,m2会有明显的时间间隔** 测试代码如下:
+
+```java
+public class SynchronizedStaticTest {
+
+    public static void main(String[] args) {
+        new Thread("T1") {
+            @Override
+            public void run() {
+                SynchronizedStatic.m1();
+            }
+        }.start();
+
+        new Thread("T2") {
+            @Override
+            public void run() {
+                SynchronizedStatic.m2();
+            }
+        }.start();
+
+        new Thread("T3") {
+            @Override
+            public void run() {
+                SynchronizedStatic.m3();
+            }
+        }.start();
+    }
+}
+```
+
+
 
