@@ -9,7 +9,7 @@
         * I/O流
     * 集合容器
     * [并发](Java_base/concurrent/start.md)
-        * [基础阶段]()
+        * [基础阶段](Java_base/concurrent/base/base.md)
             * [线程的基础](Java_base/concurrent/base/thread_base.md)
             * [Thread.join](Java_base/concurrent/base/thread_join.md)
             * [自定义线程执行与强制关闭](Java_base/concurrent/base/thread_interrupt.md)
@@ -18,6 +18,9 @@
             * [生产者消费者](Java_base/concurrent/base/thread_produce&consume.md)
             * [自定义显示锁](Java_base/concurrent/base/thread_booleanlock.md)
             * [自定义简单线程池](Java_base/concurrent/base/thread_simplethreadpool.md)
+        * [提升阶段](Java_base/concurrent/promote/promote.md)
+            * [多线程的单例设计模式](Java_base/concurrent/promote/thread_singleton.md)
+            * [volatile关键字](Java_base/concurrent/promote/thread_volatile.md)
 * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
         * [Spring IOC & Bean](develop_framework/Spring/IOC_Bean.md)
