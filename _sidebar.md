@@ -20,6 +20,7 @@
             * [自定义简单线程池](Java_base/concurrent/base/thread_simplethreadpool.md)
         * [提升阶段](Java_base/concurrent/promote/promote.md)
             * [多线程的单例设计模式](Java_base/concurrent/promote/thread_singleton.md)
+            * [多线程的观察者模式](Java_base/concurrent/promote/thread_observer.md)
             * [volatile关键字](Java_base/concurrent/promote/thread_volatile.md)
 * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
