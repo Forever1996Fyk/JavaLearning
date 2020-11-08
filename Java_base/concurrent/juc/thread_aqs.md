@@ -140,7 +140,7 @@ private Node addWaiter(Node mode) {
 
 > 独占式, 同一时刻仅有一个线程持有同步状态。
 
-`acquire(int arg)`方法是AQS提供的模板方法, 该方法是独占式获取同步状态, 但是这个方法对线程中断无效, 也就是说由于线程获取同步状态失败加入到CLH队列中, 即使对线程进行中断操作, 线程也不会从队列中移除。
+**`acquire(int arg)`方法是AQS提供的模板方法, 该方法是独占式获取同步状态, 但是这个方法对线程中断无效, 也就是说由于线程获取同步状态失败加入到CLH队列中, 即使对线程进行中断操作, 线程也不会从队列中移除。**
 
 ```java
 public final void acquire(int arg) {
@@ -165,8 +165,8 @@ public final void acquire(int arg) {
 > 至于这个方法并没有定义成abstract, 是因为独占模式下只实现`tryAcquire-tryRelease`, 而共享模式下只实现`tryAcquireShared-tryReleaseShared`。如果都定义成abstract, 那么每个模式也要去实现另一模式的接口。减少不必要的工作量。
 
 
-> **`acquireQueued(Node, int)`：**
-> 如果tryAcquire()返回false, 那么调用`addWaiter()`方法, 该线程获取资源失败, 已经被放入等待队列尾部了。**那么线程就进入等待状态, 直到其他线程彻底释放资源后唤醒线程, 线程获取资源。**
+> **`acquireQueued(Node, int)`：**<br/>
+> 如果tryAcquire()返回false, 那么调用`addWaiter()`方法, 该线程获取资源失败, 已经被放入等待队列尾部了。**那么线程就进入等待状态, 直到其他线程彻底释放资源后唤醒线程, 线程获取资源。`acquireQueued`是一个自旋的过程, 也就是说当前线程(Node)进入同步队列后, 就会进入一个自旋的过程, 每个节点都会循环判断, 当满足自己的前置节点是头节点, 并且同步状态获取成功(也就是`tryAcquire`返回true), 就可以从这个自旋过程中退出, 否则会一直执行下去。** 
 > ```java
 final boolean acquireQueued(final Node node, int arg) {
     boolean failed = true; // 标记是否成功拿到资源
@@ -192,9 +192,112 @@ final boolean acquireQueued(final Node node, int arg) {
     }
 }
 > ```
-
 > `shouldParkAfterFailedAcquire(Node, Node)`: 通过park()方法将线程变成waiting状态。在方法内部进行判断, 如果前置节点的状态不是`signal`, 那么就不断的往前找, 直到找到最近一个正常等待的状态的节点, 并排在后面。<br/>
 > `parkAndCheckInterrupt()`: 此方法是真正的让线程进入等待状态。
 
+从`acquireQueued`代码可以看到, 当前线程会一直尝试获取同步状态, 当然前提是只有前驱节点为头节点才能够获取同步状态, 理由是:
+- 保持FIFO同步队列原则
+- 头节点释放同步状态后, 将会唤醒后继节点, 后继节点被唤醒后需要检查自己是否为头节点。
+
+**acquire(int arg)方法流程图如下:**
+![aqs_acquire](../juc/image/aqs_acquire.png)
+
+**`release(int arg)`是独占式的线程释放共享资源的入口。如果释放资源(state==0), 他就会唤醒等待队列中的其他线程来获取资源。**
+
+> `release(int arg)`:
+>```java
+    public final boolean release(int arg) {
+        if (tryRelease(arg)) {
+            Node h = head;//找到头结点
+            if (h != null && h.waitStatus != 0)
+                unparkSuccessor(h);//唤醒等待队列里的下一个线程
+            return true;
+        }
+        return false;
+    }
+    ```
+> 与`tryAcquire()`方法一样, `tryRelease()`也是由自定义同步器实现。也就是说当线程来释放资源< 那么它肯定已经拿到独占资源了, 直接减掉相应量的资源即可(state-=arg), 也不需要考虑线程安全问题(因为只会有一个线程拿到资源)。要注意的是`release()`是根据`tryRelease()`的返回值判断该线程释放已经完成释放资源, 所以子类在实现这个方法时, 如果已经彻底释放资源(state=0), 要返回true, 否则返回false。
+
+这里有一个问题: **如果获取锁的线程在release时异常了, 没有unpark队列中的其他节点, 那么此时队列中的其他节点就无法被唤醒了!!!**但是在什么情况下release会抛出异常呢?
+1. 线程突然挂掉。在Java中原生的方法只有通过`Thread.stop`方法来停止线程的运行, 但是这个方法已经没废弃了
+2. 线程被interrupt。上面我们说过, 线程在运行状态是不响应中断的, 所以也不会抛出异常
+3. release代码有bug? 在`release()`这段代码中<font color=red>除非我们自己定义的同步器重写`tryRelease()`方法出错, 那么大神`Doug Lea`的方法应该是没有问题的</font>
+
+
+##### 2.2 共享式
+
+**共享式与独占式的最主要区别在于同一时刻独占式只能有一个线程获取同步状态, 而共享式在同一时刻可以有多个线程获取同步状态。例如读操作可以有多个线程同时进行, 而写操作同一时刻只能有一个线程进行写操作, 其他操作都会被阻塞。**
+
+> `acquireShared(int arg)`:<br/>
+> ```java
+    public final void acquireShared(int arg) {
+        if (tryAcquireShared(arg) < 0)
+            doAcquireShared(arg);
+    }
+>```
+这里的`tryAcquireShared()`依然需要自定义同步器去实现。但是AQS已经把具体的逻辑定义好了: 返回值小于0代表获取失败; 等于0代表获取成功, 但没有剩余资源; 大于0表示获取成功, 而且还有剩余资源, 其他线程还能去获取。
+
+所以`acquireShared(int)`的流程就是:
+1. `tryAcquireShared`尝试获取资源, 成功则直接返回;
+2. 失败则通过`doAcquireShared()`进入等待队列, 直到获取到资源为止才返回
+
+
+> `doAcquireShared(int arg)`:<br/>
+> ```java
+private void doAcquireShared(int arg) {
+    final Node node = addWaiter(Node.SHARED);//加入队列尾部
+    boolean failed = true;//是否成功标志
+    try {
+        boolean interrupted = false;//等待过程中是否被中断过的标志
+        for (;;) {
+            final Node p = node.predecessor();//前驱
+            if (p == head) {//如果到head的下一个，因为head是拿到资源的线程，此时node被唤醒，很可能是head用完资源来唤醒自己的
+                int r = tryAcquireShared(arg);//尝试获取资源
+                if (r >= 0) {//成功
+                    setHeadAndPropagate(node, r);//将head指向自己，还有剩余资源可以再唤醒之后的线程
+                    p.next = null; // help GC
+                    if (interrupted)//如果等待过程中被打断过，此时将中断补上。
+                        selfInterrupt();
+                    failed = false;
+                    return;
+                }
+            }
+            //判断状态，寻找安全点，进入waiting状态，等着被unpark()或interrupt()
+            if (shouldParkAfterFailedAcquire(p, node) &&
+                parkAndCheckInterrupt())
+                interrupted = true;
+        }
+    } finally {
+        if (failed)
+            cancelAcquire(node);
+    }
+}
+>```
+> 仔细看这段代码其实流程跟`acquireQueued()`并没有太大区别。只不过这里将自我中断的`selfInterrupt()`放到`doAcquireShared`中。
+
+**要注意的是, 这里只有当前线程是头节点的next节点, 才会去尝试获取资源, 有剩余资源还会去唤醒next节点的线程。**
+
+如果头节点释放了5个资源, 而next节点需要6个。那么next节点会把资源让给后面的节点吗?
+
+答案是否定的。next节点会继续park()瞪大其他线程释放资源。所以在共享模式下, 多个线程时可以同时执行的, 现在因为next节点的资源需求量大, 而导致后面的节点一直处于等待状态。这其实并不是什么问题, 只是AQS保证严格按照入队顺序唤醒。**保证公平, 降低并发。**
+
+> `releaseShared()`:<br/>
+> ```java
+public final boolean releaseShared(int arg) {
+    if (tryReleaseShared(arg)) {//尝试释放资源
+        doReleaseShared();//唤醒后继结点
+        return true;
+    }
+    return false;
+}
+>```
+> 这个方法也比较简单, 总结一句话: **释放资源后< 唤醒后继节点**。
+
+对于共享模式下释放资源要注意的是:
+- **独占模式下的`tryRelease()`在完全释放掉资源后(state=0), 才会返回ture去唤醒其他线程;**
+- **而共享模式下`releaseShared()`没有这种要求, 共享模式实质就是控制一定量的线程并发执行, 那么拥有资源的线程在释放掉部分资源时就可以唤醒后继等待的节点**
+
+举个例子:
+> 假如资源总量是13, A(5)和B(7)分别获取到资源并发运行, 此时C(4)准备获取资源时发现就剩1个资源了那么就需要等待。A在运行过程中释放掉2个资源量, 然后`tryReleaseShared(2)`返回ture唤醒C, 但是C只有3个资源不够, 所以仍继续等待; 之后B又释放2个, `tryReleaseShared(2)`返回ture唤醒C, 现在有5个资源满足C的要求, 然后C就可以跟A和B一起运行。
 
 
