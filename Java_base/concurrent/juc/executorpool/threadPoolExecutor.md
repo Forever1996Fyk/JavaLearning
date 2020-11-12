@@ -115,3 +115,13 @@ public ThreadPoolExecutor(int corePoolSize,
 > **threadFactory:** 用于设置创建线程的工厂。ThreadFactory
 >
 > **RejectedExecutionHandler:** 线程池的拒绝策略。所谓拒绝策略, 是指将任务添加到线程池中, 线程池拒绝该任务所采取的的相应策略。
+
+**这里的参数关系一定要搞清楚:**
+
+**`corePoolSize`是核心线程大小, 线程池中固定保持多少个线程;**<br/>
+**`workQueue`任务队列的作用是当线程池中正在执行任务的线程数量已达到核心线程数时, 再次提交任务就会先存到队列中进行等待, 直到达到队列的大小;**<br/>
+**`maximumPoolSize`最大线程数, 是线程池允许存在的最大的线程数量。当`workQueue`等待任务已满时, 线程池就会从核心线程数扩充到最大线程数;**
+
+> 这三个参数的关系: 当执行任务的线程数量达到核心线程数`corePoolSize`时, 提交的任务会存在`wokrQueue`等待执行; 但是如果提交任务过多, 达到了`workQueue`的大小, 那么线程池数量就会扩充到最大线程数`maximumPoolSize`; 而如果此时任务仍然不断的提交, 达到了最大线程数, 那么就会执行相应的拒绝策略。
+
+按照上面的解释, 如果corePoolSize = 1, maximumPoolSize = 2, workQueue.size = 1; 如果任务执行时间过长< 导致线程还没来得及回收, 那么最多只能提交3个任务。当提交第4个任务是就会执行拒绝策略。
