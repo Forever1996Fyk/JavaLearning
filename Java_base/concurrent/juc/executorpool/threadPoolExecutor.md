@@ -125,3 +125,45 @@ public ThreadPoolExecutor(int corePoolSize,
 > 这三个参数的关系: 当执行任务的线程数量达到核心线程数`corePoolSize`时, 提交的任务会存在`wokrQueue`等待执行; 但是如果提交任务过多, 达到了`workQueue`的大小, 那么线程池数量就会扩充到最大线程数`maximumPoolSize`; 而如果此时任务仍然不断的提交, 达到了最大线程数, 那么就会执行相应的拒绝策略。
 
 按照上面的解释, 如果corePoolSize = 1, maximumPoolSize = 2, workQueue.size = 1; 如果任务执行时间过长< 导致线程还没来得及回收, 那么最多只能提交3个任务。当提交第4个任务是就会执行拒绝策略。
+
+### execute() 方法分析
+
+`ThreadPoolExecutor`通过`execute()`和`submit()`来提交任务, 我们先看`execute()`的源码:
+
+```java
+public void execute(Runnable command) {
+    if (command == null)
+        throw new NullPointerException();
+
+    // 返回包含线程数及线程池状态（头3位）
+    int c = ctl.get();
+    
+    // 如果工作线程数小于核心线程数，则创建线程任务执行
+    if (workerCountOf(c) < corePoolSize) {
+        
+        if (addWorker(command, true))
+            return;
+            
+        // 如果创建失败，防止外部已经在线程池中加入新任务，重新获取
+        c = ctl.get();
+    }
+    
+    // 只有线程池处于 RUNNING 状态，且 入队列成功
+    if (isRunning(c) && workQueue.offer(command)) {
+    　　// 后面的操作属于double-check
+        int recheck = ctl.get();
+        
+        // 如果线程池不是 RUNNING 状态，则将刚加入队列的任务移除
+        if (! isRunning(recheck) && remove(command))
+            reject(command);
+            
+        // 如果之前的线程已被消费完，新建一个线程
+        else if (workerCountOf(recheck) == 0)
+            addWorker(null, false);
+    }
+    // 核心池和队列都满了，尝试创建一个新线程
+    else if (!addWorker(command, false))
+        // 如果 addWorker 返回是 false，即创建失败，则唤醒拒绝策略
+        reject(command);
+}
+```

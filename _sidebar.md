@@ -7,7 +7,9 @@
         * 异常
         * 多线程
         * I/O流
-    * 集合容器
+    * [集合容器](Java_base/collection/start.md)
+        * [基本知识](Java_base/collection/collection_base.md)
+        * [数组与链表](Java_base/collection/collection_array&linkedlist.md)
     * [并发](Java_base/concurrent/start.md)
         * [基础阶段](Java_base/concurrent/base/base.md)
             * [线程的基础](Java_base/concurrent/base/thread_base.md)
