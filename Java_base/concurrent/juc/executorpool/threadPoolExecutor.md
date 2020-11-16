@@ -950,3 +950,86 @@ final void tryTerminate() {
 > 3. 实例化Worker, 将task任务包装到Worker中, 并且再次判断线程池的状态, 然后调用start()方法, 最终调用runWorker()方法; 
 > 4. 最后判断 如果线程池的状态是STOP并且当前的任务未被中断; 那么就中断这个任务, 这也体现了STOP状态的特性, 会中断所有的任务, 包括执行中的任务。
 > 最后返回true, 表示添加任务成功。
+
+`runWorker`方法流程如下:该方法是最终执行task的方法
+> 1. 首先判断task是否为空, 如果不为空, 则获取worker的锁, 防止线程被其他线程中断, 其次调用task.run()方法, 执行任务, 最终释放worker锁; 处理完worker后, 如果处理成功, 则workerCount-1, 并tryTerminate();
+> 2. 如果task为空则表示此时任务为空, 那么则调用getTask()方法从队列中获取任务, 如果从队列中获取的task不为null, 那么执行相同的逻辑, 否则退出判断, 处理worker退出的逻辑。
+
+`getTask`方法执行流程如下:
+> 1. 首先获取当前线程池的状态rs, 如果rs>STOP, 则不处理workQueue中的任务, 同时workerCount-1, 并且返回null; 如果rs=SHUTDOWN, 并且workQueue为Empty, 也做同样的操作;
+> 2. 如果第一步条件不满足, 那么会进入一个死循环, 不断的获取当前工作的线程数wc, 并且进行判断。如果wc大于核心线程数corePoolSize, 那么timed标识为true(time的作用主要是标识当前Worker超时是否要退出), 如果wc小于最大线程数, 并且线程未超时 那么就直接退出循环; 否则就CAS减少workCount, 并且返回null;
+> 3. 最后从workQueue中取任务, 如果timed标识为true, 则表示如果获取worker超时调用poll取线程, 获取timed为false, 表示直接通过take取线程, 没有线程获取到时将一直阻塞, 知道获取到线程或者中断。
+
+>通过上面几个方法的分析, 我们可以得出一个问题的答案, 那就是线程池是如何实现线程复用的?
+
+大部分人如果没有看懂线程池源码流程的话, 可能都会认为, 所谓线程池复用就是当初始化线程池时, 会直接创建corePoolSize数量的线程, 存在池子中, 每次调用execute()方法时, 拿到一个线程, 去执行任务。执行完任务后, 在将这个线程收回到池子中, 这些线程要么是等待, 要么是阻塞。如果提交的任务超多核心线程数, 就将任务存放到阻塞队列中, 如果阻塞队列也满了, 就对线程池进行扩容, 直到达到最大线程数maximumPoolSize。如果在提交任务就执行拒绝策略。
+
+但这是大错特错的想法, 通过上面对几个方法的分析, 应该会发现, 每次我们execute一个任务时, 只要未达到corePoolSize或者maximumPoolSize就会创建一个worker实例, 而这个worker实例说白了就是线程池中的线程, 所以并不是线程池初始化的时候, 就创建一定数量的线程。
+
+**所以线程复用的核心在Worker实例, 我们通过源码看到`runWorker()`方法中的一段循环判断, 这段代码我简写出来:**
+```java
+Runnable task = w.firstTask;
+w.firstTask = null;
+try {
+    while (task != null || (task = getTask()) != null) {
+        w.lock();
+        try {
+            ...
+            task.run();
+            ...
+        } finally {
+            task = null;
+            w.completedTasks++;
+            w.unlock();
+        }
+    }
+} finally {
+    processWorkerExit(w, completedAbruptly);
+}
+```
+
+从上面代码我们发现, 这个task就是我们提交的任务:
+
+1. 当一开始创建Worker实例时, 会把task任务包装进去, 并且启动worker, 调用runWorker;此时task肯定不为null, 所以进入while循环执行task; 
+2. 但是当task执行结束之后, 就会将task设为null, 此时再会去进行循环判断, 此时task==null, 那么就会调用`getTask`方法
+3. 我们知道`getTask`方法时从阻塞队列中获取任务, 也就是说`(task = getTask) != null`这段判断是从队列中获取任务为null, 则不会进入循环; 如果不为null,那就执行这个任务; 并且会不断的循环获取队列中的任务, 直到获取不到任务。
+4. 最后会执行外面的finally中的代码`processWorkerExit`, 将worker线程退出。
+
+**所以这个worker有两个作用, 一个是执行我们提交的任务, 另一个是执行队列中的任务。**
+
+综上, 我们得到一个结论: **所谓线程池中线程的复用, 是指创建的worker线程, 既可以执行我们提交的任务, 还可以进行复用不断的获取队列中的任务并且执行, 直到队列为空。**
+
+最后我们用一个例子, 来完整的说明线程池的流程
+
+> 我们初始化一个线程池 new ThreadPoolSize(1, 2, 30, TimeUnit.SECONDS, new ArrayBlockingQueue(1), defalutThreadFactory, abortPolicy());假设每一个任务执行的时间较长, 并且线程池状态始终处于RUNNING。
+
+通过上面的初始化线程池, 我们必须要清楚其中的参数含义:
+- corePoolSize核心线程数: 1
+- maximumPoolSize最大线程数: 2
+- blockingQueue大小: 2
+- keepAliveTime空闲线程存活时间: 30s
+
+其他两个暂不解释...
+
+1. 首先我们调用executor来提交一个任务: task1; 那么根据源码, 此时工作线程为0小于corePoolSize核心线程数, 所以调用`addWorker`方法创建一个Worker实例(也就是worker线程): **work1**; 并且启动worker1, 调用`runWorker`方法, 此时就会执行task1, 并且会等待task1完成(因为task执行时间较长);
+2. 然后我们在提交一个任务: task2; 此时工作线程为1不小于corePoolSize, 那么就会调用workQueue.offer()方法将任务存入到队列中, 此时队列已经满了(因为队列大小是1)
+3. 我们在提交一个任务: task3; 此时task1仍未执行完, 所以工作线程还是1, 并且进入workQueue队列失败(因为已经满了), 所以会再次调用`addWorker`方法, 判断此时工作线程为1没有达到maximumPoolSize最大线程数, 所以会创建一个Worker实例: **worker2**, 并且调用`runWorker`方法, 执行task3,并且会等待task3完成;
+4. 如果此时task1已经执行结束了, 那就会把task1=null, `work1`会循环调用`getTask`方法 从队列中获取任务(这里正是我们上面说的线程的复用), 队列中还有一个task2处于阻塞状态, 所以work1会拿到这个task2, 并且执行这个任务;
+5. work2执行task3完成, 并且从队列中获取不到任务, 所以最终调用`processWorkerExit`, work2退出线程池;
+6. work1执行task2完成, 并且从队列中获取不到任务, 所以最终调用`processWorkerExit`, work1退出线程池。
+
+这就是整个线程池调用execute的流程, 实现线程复用的流程。
+
+如果后面调用shutdown()方法, 那么
+
+1. 首先会将线程池状态改为SHUTDOWN, 此时线程池无法在接收新的任务;
+2. 其次会中断空闲的线程; 就是遍历workers(worker实例的set集合),并且判断尝试获取worker的锁, 如果这个worker正在执行任务, 是无法获取到的, 也就是说, 不会中断正在执行的任务;
+3. 当worker从队列中获取任务时(调用`getTask`方法),如果当前状态时SHUTDOWN, 但是workQueue不为空, 还是会返回队列中的任务, 并执行; 直到队列为空;
+4. 最终将线程池转化为TIDYING, TERMINATE
+
+如果后面调用shutdownNow()方法, 那么
+
+1. 首先会将线程池状态改为STOP, 此时线程池无法在接收新的任务;
+2. 其次会中断所有线程, 也就是遍历workers 并且直接中断(调用shutdownNow()就不会尝试获取worker锁了,而是直接中断);
+3. 当worker从队列中获取任务时(调用`getTask`方法), 如果当前状态时STOP时, 就直接返回null, 此时worker直接退出;
+4. 最终将线程池转化为TIDYING, TERMINATE
