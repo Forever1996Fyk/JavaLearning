@@ -1033,3 +1033,6 @@ try {
 2. 其次会中断所有线程, 也就是遍历workers 并且直接中断(调用shutdownNow()就不会尝试获取worker锁了,而是直接中断);
 3. 当worker从队列中获取任务时(调用`getTask`方法), 如果当前状态时STOP时, 就直接返回null, 此时worker直接退出;
 4. 最终将线程池转化为TIDYING, TERMINATE
+
+
+至此, 所有有关线程池的源码分析, 就暂时告一段落了。后面还会介绍创建线程池的工厂类`Exectours`, 4中拒绝策略以及`SchedulePoolExecutor`的知识。
