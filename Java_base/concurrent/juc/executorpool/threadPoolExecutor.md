@@ -1035,4 +1035,4 @@ try {
 4. 最终将线程池转化为TIDYING, TERMINATE
 
 
-至此, 所有有关线程池的源码分析, 就暂时告一段落了。后面还会介绍创建线程池的工厂类`Exectours`, 4中拒绝策略以及`SchedulePoolExecutor`的知识。
+至此, 所有有关线程池的源码分析, 就暂时告一段落了。后面还会介绍创建线程池的工厂类`Exectours`, 4种拒绝策略以及`SchedulePoolExecutor`的知识。
