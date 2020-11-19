@@ -12,6 +12,7 @@
         * [数组与链表](Java_base/collection/collection_array&linkedlist.md)
         * [哈希表](Java_base/collection/collection_hash.md)
         * [树与二叉树](Java_base/collection/collection_tree&binarytree.md)
+        * [二叉排序树](Java_base/collection/collection_binarysorttree.md)
     * [并发](Java_base/concurrent/start.md)
         * [基础阶段](Java_base/concurrent/base/base.md)
             * [线程的基础](Java_base/concurrent/base/thread_base.md)
