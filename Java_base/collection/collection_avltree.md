@@ -30,7 +30,7 @@
 
 #### 2.1 右旋
 
-**当插入的节点在不平衡节点的左侧和左侧(RR)时, 我们利用右旋在实现平衡。**
+**当插入的节点在不平衡节点的左侧和左侧(LL)时, 我们利用右旋在实现平衡。**
 
 如下图, 插入一个新节点之后出现不平衡:
 
@@ -84,14 +84,120 @@ private Node rightRotate(Node y) {
 }
 ```
 
-例如我们将数组`int[] a = {3, 2, 1, 4, 5, 6, 7, 10, 9, 8}`构建成一颗二叉排序树。如下:
+#### 2.2 左旋
 
-![binarysorttree_array](/image/binarysorttree_array.png)
-![avl_ll_1](/image/avl_ll_1.png)
+**当插入元素在第一个不平衡节点的右侧的右侧(RR), 我们就可以利用左旋来实现平衡。**
 
-这样查找的效率会很低, 树的高度为8, 而且大多数只有一个孩子, 所以我们利用左旋, 将它变成AVL树。
+其实左旋跟右旋是对称的, 直接上代码:
 
+```java
+/**
+ * RR
+ * <p>
+ * / 对节点进行左旋转操作，返回左旋转之后新的根节点
+ * /        y                            x
+ * /       / \                         /   \
+ * /      T1  x     向左旋转(y)       y     z
+ * /         / \    -------------->  / \   / \
+ * /        T2  z                   T1 T2 T3 T4
+ * /           / \
+ * /          T3 T4
+ */
+private Node leftRotate(Node y) {
+    Node x = y.right;
+    Node t2 = x.left;
 
+    // 右旋
+    x.left = y;
+    y.right = t2;
+
+    //更新height
+    y.height = Math.max(getHeight(y.left), getHeight(y.right)) + 1;
+    x.height = Math.max(getHeight(x.left), getHeight(x.right)) + 1;
+    return x;
+}
+```
+
+#### 2.3 LR
+
+**当插入的元素在不平衡节点的左侧的右侧(LR), 我们可以先进行左旋, 使其转化为插入的元素在不平衡节点的左侧的左侧(LL), 在进行右旋即可。**
+
+![avl_lr_1](/image/avl_lr_1.png)
+
+对x节点,进行左旋之后就转化为LL的情况, 按照第一种情况进行右旋处理即可。
+
+![avl_lr_2](/image/avl_lr_2.png)
+
+#### 2.4 RL
+
+**当插入的元素在不平衡节点的右侧的左侧(RL), 我们可以先进行右旋, 使其转化为插入的元素在不平衡节点的右侧的右侧(LL), 在进行左旋即可。**
+
+这种情况正好与LR对称。
+
+#### 2.5 总结
+
+上面的四种情况都是利用了左旋和右旋的方式来实现平衡。具体代码如下:
+
+```java
+public void put(K key, V value) {
+    Node newNode = new Node(key, value);
+    root = put(root, newNode);
+}
+
+/*** 递归算法：插入一个元素，返回插入新节点后树的根 */
+private Node put(Node node, Node newNode) {
+    if (node == null) {
+        size++;
+        return newNode;
+    }
+
+    if (newNode.key.compareTo(node.key) < 0) {
+        node.left = put(node.left, newNode);
+    } else if (newNode.key.compareTo(node.key) > 0) {
+        node.right = put(node.right, newNode);
+    } else {
+        node.value = newNode.value;
+    }
+
+    // 更新高度
+    node.height = Math.max(getHeight(node.left), getHeight(node.right)) + 1;
+
+    // 维护平衡
+    int balanceFactor = getBalanceFactor(node);
+
+    // LL
+    if (balanceFactor > 1 && getBalanceFactor(node.left) >= 0) {
+        // 右旋转
+        return rightRotate(node);
+    }
+
+    // LR
+    if (balanceFactor > 1 && getBalanceFactor(node.left) < 0) {
+        // 先对当前节点的左孩子进行左旋转转变为LL，然后在进行右旋转
+        node.left = leftRotate(node.left);
+        // 右旋转
+        return rightRotate(node);
+    }
+
+    // RR
+    if (balanceFactor < -1 && getBalanceFactor(node.right) <= 0) {
+        // 左旋转
+        return leftRotate(node);
+    }
+
+    //RL
+    if (balanceFactor < -1 && getBalanceFactor(node.right) > 0) {
+        // 先对当前节点的右孩子进行右旋转转变为RR，然后在进行左旋转
+        node.right = rightRotate(node.right);
+        // 左旋转
+        return leftRotate(node);
+    }
+
+    return node;
+}
+```
+
+[平衡二叉树参考文章](https://www.jianshu.com/p/4f5eca987990)
 
 
 
