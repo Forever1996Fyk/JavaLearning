@@ -160,8 +160,8 @@ static final int tableSizeFor(int cap) {
 
 把127与80对比一下:
 
->0000 0000 0000 0000 0000 0000 0101 0000 //80
->0000 0000 0000 0000 0000 0000 0111 1111 //127
+>0000 0000 0000 0000 0000 0000 0101 0000 //80 <br>
+>0000 0000 0000 0000 0000 0000 0111 1111 //127 <br>
 
 可以发现, 我们只要把80从最高位起每一位全置为1, 就可以得到比80大的最近2次幂减一的数, 也就是2^n-1, 最后在执行一次+1操作即可。
 
@@ -233,3 +233,365 @@ return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 
 > 还有人疑问, 为什么只右移到最大16位, 不右移32位? <br>
 > **因为int就是32位的, 所以如果无符号右移32位, 最后肯定32位都是0, 根本就没必要在进行后面的或操作了, 对结果没有影响。**
+
+### 2. HashMap核心方法
+
+无论是`List`还是`Map`, 最重要的操作都是增删改查部分, 对于HashMap来说, 添加元素是最重要也是非常复杂的功能之一。
+
+#### 2.1 put添加元素
+
+`put`的源码如下:
+
+```java
+public V put(K key, V value) {
+    return putVal(hash(key), key, value, false, true);
+}
+
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+```
+
+`HashMap`中使用的`hash`函数很简单, 就是把**key与其高16位进行异或操作**。
+
+> 因为没有完美的哈希算法可以彻底避免碰撞, 所以只能尽可能减少碰撞。
+
+`putVal()`方法具体源码:
+
+```java
+// 参数onlyIfAbsent表示是否替换原值
+// 参数evict我们可以忽略它，它主要用来区别通过put添加还是创建时初始化数据的
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+                boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i;
+    // 空表，需要初始化
+    if ((tab = table) == null || (n = tab.length) == 0)
+        // resize()不仅用来调整大小，还用来进行初始化配置
+        n = (tab = resize()).length;
+    // (n - 1) & hash这种方式也熟悉了吧？都在分析ArrayDeque中有体现
+    //这里就是看下在hash位置有没有元素，实际位置是hash % (length-1)
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        // 将元素直接插进去
+        tab[i] = newNode(hash, key, value, null);
+    else {
+        //这时就需要链表或红黑树了
+        // e是用来查看是不是待插入的元素已经有了，有就替换
+        Node<K,V> e; K k;
+        // p是存储在当前位置的元素
+        if (p.hash == hash &&
+            ((k = p.key) == key || (key != null && key.equals(k))))
+            e = p; //要插入的元素就是p，这说明目的是修改值
+        // p是一个树节点
+        else if (p instanceof TreeNode)
+            // 把节点添加到树中
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        else {
+            // 这时候就是链表结构了，要把待插入元素挂在链尾
+            for (int binCount = 0; ; ++binCount) {
+                //向后循环
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null);
+                    // 链表比较长，需要树化，
+                    // 由于初始即为p.next，所以当插入第9个元素才会树化
+                    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);
+                    break;
+                }
+                // 找到了对应元素，就可以停止了
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    break;
+                // 继续向后
+                p = e;
+            }
+        }
+        // e就是被替换出来的元素，这时候就是修改元素值
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            // 默认为空实现，允许我们修改完成后做一些操作
+            afterNodeAccess(e);
+            return oldValue;
+        }
+    }
+    ++modCount;
+    // size太大，达到了capacity的0.75，需要扩容
+    if (++size > threshold)
+        resize();
+    // 默认也是空实现，允许我们插入完成后做一些操作
+    afterNodeInsertion(evict);
+    return null;
+}
+```
+
+我们在整理一下`putVal`方法的整体流程:
+
+1. 当插入第一个元素时, 此时哈希表table如果是空表就会调用`resize()`来初始化;(除非构造HashMap时, 传入一个Map集合);
+
+2. 判断当前传入的hash位置有没有元素, 实际位置就是`hash&(length-1)`。
+
+3. 如果当前位置没有元素, 那就将元素直接插入进去;
+
+4. 如果当前位置存在元素, 再判断当前位置存储的元素key值与传入的key值相等, 那就直接覆盖原来的value;
+
+5. 如果当前位置存储的元素key值是否与传入的key值不相等, 再判断当前位置存储的元素是否是一个树节点`TreeNode`, 如果是, 就说明此处存储结构是红黑树, 就把节点添加到红黑树中;
+
+6. 如果当前存储元素不是`TreeNode`类型, 就表示存储结构是链表, 直接要新的元素插入到链尾;
+
+7. 在第6步时, 遍历链表插入新的元素时 比较每一个元素, 判断新元素key是否存在, 如果存在就直接覆盖value, 否则就插入链尾; 如果此时链表长度较长达到了8, 那就将整个链表进行树化;
+
+8. 插入元素成功后, `HashMap`的容量size+1, 如果此时的size大于**`capacity*loadFactor`**, 那么就需要扩容, 再次调用`resize()`方法。
+
+![collection_hashmap_put](/image/collection_hashmap_put.png)
+
+上面的就是`put`方法的基本流程原理, 我们发现在插入元素时, 如果此时存储结构是红黑树时就调用`TreeNode.putTreeVal`方法向红黑树中插入元素。
+
+而其中当插入元素后, 如果链表的长度大于8时, 链表就会树化, 调用方法为`treeifyBin`。具体的方法如下:
+
+```java
+final void treeifyBin(Node<K,V>[] tab, int hash) {
+    int n, index; Node<K,V> e;
+    //如果表是空表，或者长度还不到树化的最小值，就需要重新调整表了
+    // 这样做是为了防止最初就进行树化
+    if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY)
+        resize();
+    else if ((e = tab[index = (n - 1) & hash]) != null) {
+        TreeNode<K,V> hd = null, tl = null;
+        // while循环的目的是把链表的每个节点转为TreeNode
+        do {
+            // 根据当前元素，生成一个对应的TreeNode节点
+            TreeNode<K,V> p = replacementTreeNode(e, null);
+            //挂在红黑树的尾部，顺序和链表一致
+            if (tl == null)
+                hd = p;
+            else {
+                p.prev = tl;
+                tl.next = p;
+            }
+            tl = p;
+        } while ((e = e.next) != null);
+        if ((tab[index] = hd) != null)
+            // 这里也用到了TreeNode的方法，我们在最后一起分析
+            // 通过头节点调节TreeNode
+            // 链表数据的顺序是不符合红黑树的，所以需要调整
+            hd.treeify(tab);
+    }
+}
+```
+
+从上面的代码看出, 无论是`put`还是`treeify`, 都依赖于`resize`方法, 所以`resize`很重要。
+
+> `resize`不仅可以调整大小, 还能调整树化和反树化(从树变为链表)所带来的的影响。
+
+`resize`源码如下:
+
+```java
+final Node<K,V>[] resize() {
+    Node<K,V>[] oldTab = table;
+    int oldCap = (oldTab == null) ? 0 : oldTab.length;
+    int oldThr = threshold;
+    int newCap, newThr = 0;
+    if (oldCap > 0) {
+        // 大小超过了2^30
+        if (oldCap >= MAXIMUM_CAPACITY) {
+            threshold = Integer.MAX_VALUE;
+            return oldTab;
+        }
+        // 扩容，扩充为原来的2倍
+        else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
+                    oldCap >= DEFAULT_INITIAL_CAPACITY)
+            newThr = oldThr << 1; // double threshold
+    }
+    // 原来的threshold设置了
+    else if (oldThr > 0) // initial capacity was placed in threshold
+        newCap = oldThr;
+    else {               // zero initial threshold signifies using defaults
+        // 全部设为默认值
+        newCap = DEFAULT_INITIAL_CAPACITY;
+        newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+    }
+    if (newThr == 0) {
+        float ft = (float)newCap * loadFactor;
+        newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
+                    (int)ft : Integer.MAX_VALUE);
+    }
+    threshold = newThr;
+     // 扩容完成，现在需要进行数据拷贝，从原表复制到新表
+    @SuppressWarnings({"rawtypes","unchecked"})
+        Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+    table = newTab;
+    if (oldTab != null) {
+        for (int j = 0; j < oldCap; ++j) {
+            Node<K,V> e;
+            if ((e = oldTab[j]) != null) {
+                oldTab[j] = null;
+                if (e.next == null)
+                    // 这是只有一个值的情况
+                    newTab[e.hash & (newCap - 1)] = e;
+                else if (e instanceof TreeNode)
+                    // 重新规划树，如果树的size很小，默认为6，就退化为链表
+                    ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                else { // preserve order
+                    // 处理链表的数据
+                    // loXXX指的是在原表中出现的位置
+                    Node<K,V> loHead = null, loTail = null;
+                    // hiXXX指的是在原表中不包含的位置
+                    Node<K,V> hiHead = null, hiTail = null;
+                    Node<K,V> next;
+                    do {
+                        next = e.next;
+                        //这里把hash值与oldCap按位与。
+                        //oldCap是2的次幂，所以除了最高位为1以外其他位都是0
+                        // 和它按位与的结果为0，说明hash比它小，原表有这个位置
+                        if ((e.hash & oldCap) == 0) {
+                            if (loTail == null)
+                                loHead = e;
+                            else
+                                loTail.next = e;
+                            loTail = e;
+                        }
+                        else {
+                            if (hiTail == null)
+                                hiHead = e;
+                            else
+                                hiTail.next = e;
+                            hiTail = e;
+                        }
+                    } while ((e = next) != null);
+                    // 挂在原表相应位置
+                    if (loTail != null) {
+                        loTail.next = null;
+                        newTab[j] = loHead;
+                    }
+                    // 挂在后边
+                    if (hiTail != null) {
+                        hiTail.next = null;
+                        newTab[j + oldCap] = hiHead;
+                    }
+                }
+            }
+        }
+    }
+    return newTab;
+}
+```
+
+#### 2.2 remove删除元素
+
+`remove`源码如下:
+
+```java
+public V remove(Object key) {
+    Node<K,V> e;
+    return (e = removeNode(hash(key), key, null, false, true)) == null ?
+        null : e.value;
+}
+```
+
+和`put`方法一样, 实际的操作在`removeNode`方法中完成。
+
+```java
+// matchValue是说只有value值相等时候才可以删除，我们是按照key删除的，所以可以忽略它。
+// movable是指是否允许移动其他元素，这里是和TreeNode相关的
+final Node<K,V> removeNode(int hash, Object key, Object value,
+                           boolean matchValue, boolean movable) {
+    Node<K,V>[] tab; Node<K,V> p; int n, index;
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (p = tab[index = (n - 1) & hash]) != null) {
+        Node<K,V> node = null, e; K k; V v;
+        // 不同情况下获取待删除的node节点
+        if (p.hash == hash &&
+            ((k = p.key) == key || (key != null && key.equals(k))))
+            node = p;
+        else if ((e = p.next) != null) {
+            if (p instanceof TreeNode)
+                node = ((TreeNode<K,V>)p).getTreeNode(hash, key);
+            else {
+                do {
+                    if (e.hash == hash &&
+                        ((k = e.key) == key ||
+                            (key != null && key.equals(k)))) {
+                        node = e;
+                        break;
+                    }
+                    p = e;
+                } while ((e = e.next) != null);
+            }
+        }
+        if (node != null && (!matchValue || (v = node.value) == value ||
+                                (value != null && value.equals(v)))) {
+            if (node instanceof TreeNode)
+                // TreeNode删除
+                ((TreeNode<K,V>)node).removeTreeNode(this, tab, movable);
+            else if (node == p)
+                // 在队首，直接删除
+                tab[index] = node.next;
+            else
+                // 链表中删除
+                p.next = node.next;
+            ++modCount;
+            --size;
+            // 默认空实现，允许我们删除节点后做些处理
+            afterNodeRemoval(node);
+            return node;
+        }
+    }
+    return null;
+}
+```
+
+#### 2.3 get获取元素
+
+查询的`get`方法是通过`getNode`方法完成的, 源码如下:
+
+```java
+public V get(Object key) {
+    Node<K,V> e;
+    return (e = getNode(hash(key), key)) == null ? null : e.value;
+}
+
+final Node<K,V> getNode(int hash, Object key) {
+    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (first = tab[(n - 1) & hash]) != null) {
+        if (first.hash == hash && // always check first node
+            ((k = first.key) == key || (key != null && key.equals(k))))
+            return first;
+        if ((e = first.next) != null) {
+            if (first instanceof TreeNode)
+                return ((TreeNode<K,V>)first).getTreeNode(hash, key);
+            do {
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    return e;
+            } while ((e = e.next) != null);
+        }
+    }
+    return null;
+}
+```
+
+`get`方法的逻辑与`put`很像, 也是判断元素是否存在哈希表中, 还是链表, 还是红黑树。
+
+### 3. TreeNode源码分析
+
+我们通过上面分析`HashMap`的核心方法时, 会发现增删查中涉及到红黑树的操作都是通过`TreeNode`来实现的。所以我们看下`TreeNode`的具体实现:
+
+`TreeNode`算上其继承的成员变量, 共有11个:
+
+```java
+// 继承的变量, 也就是HashMap.Node
+final int hash;
+final K key;
+V value;
+Node<K,V> next;
+
+// TreeNode内部的变量
+TreeNode<K,V> parent;  // red-black tree links
+TreeNode<K,V> left;
+TreeNode<K,V> right;
+TreeNode<K,V> prev;    // needed to unlink next upon deletion
+boolean red;
+```
