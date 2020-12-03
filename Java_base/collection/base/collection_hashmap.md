@@ -231,8 +231,24 @@ return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 
 以上就是寻找最近2次幂的方案, 也是`HashMap`中使用的方式。
 
-> 还有人疑问, 为什么只右移到最大16位, 不右移32位? <br>
-> **因为int就是32位的, 所以如果无符号右移32位, 最后肯定32位都是0, 根本就没必要在进行后面的或操作了, 对结果没有影响。**
+> 还有人疑问, 为什么只右移到最大16位, 不右移32位?
+**因为int就是32位的, 所以如果无符号右移32位, 最后肯定32位都是0, 根本就没必要在进行后面的或操作了, 对结果没有影响。**
+
+> 为什么底层数组的长度总是要2的n次幂呢?
+
+首先要知道JDK1.7之前的`HashMap`中的hash算法是:
+
+```java
+hash & (length - 1)
+```
+
+其中length就是数组长度, hash就是插入值的hash值, 如果length=2^n的话, 那么length-1 = 2^n-1。
+
+我们通过上面的示例分析可以看到, 2^n-1用二进制表示, 所有位一定都是1, 此时跟hash值进行`&`与运算, 则可以完整保留原来的hash值的二进制数据。这样基本上很少会出现hash碰撞, 因为只要插入的key不相同, 基本上就不会出现hash碰撞。(除非hash值比较相近)
+
+相反的, 如果数组长度不是2的n次幂, 则出现hash碰撞的可能性会大大提高。如下图示例:
+
+![collection_hashmap_tablesize2n](/image/collection_hashmap_tablesize2n.png)
 
 ### 2. HashMap核心方法
 
@@ -253,7 +269,7 @@ static final int hash(Object key) {
 }
 ```
 
-`HashMap`中使用的`hash`函数很简单, 就是把**key与其高16位进行异或操作**。
+`HashMap`中使用的`hash`函数很简单, 就是把**key与其高16位进行异或操作**。这是为了尽量避免"低位不变, 高位变化"是造成的hash冲突。
 
 > 因为没有完美的哈希算法可以彻底避免碰撞, 所以只能尽可能减少碰撞。
 
@@ -478,6 +494,24 @@ final Node<K,V>[] resize() {
 }
 ```
 
+我们可以看到`resize`的代码逻辑比较复杂, 首先我们要知道扩容的时机:
+
+**当`HashMap`中包含的`Entry`的数量大于等于`threshold = loadFactor * capacity`的时候, 此时触发扩容机制, 也就是调用`resize`方法, 将其容量扩大为原来的2倍(这里的原因跟之前说的数组长度必须是2的n次幂一样)。**
+
+那么对`resize`的执行步骤如下:
+
+1. 在`resize`中, 定义了`oldCap`参数, 记录原table的长度; 定义一个`newCap`参数, 记录新table的长度,将新table的长度扩展到原来的2倍(`newCap = oldCap << 1`), 同时扩展长度也变为原来的2倍(`newThr = oldThr << 1`);
+
+2. 当扩容大小确定时, 遍历原来的table, 将原table中的每个元素放入到新table中;
+
+3. 如果`e.next == null`, 也就是说不存在链表以及红黑树的情况下, 直接把原来的元素放入到新table中, 其中`e.hash & (newCap - 1)`就是计算原来的元素e在新table中的位置;
+
+4. 如果`e instanceof TreeNode`, 就表示此时该位置上存在红黑树, 那就需要重新调整红黑树的结构, 如果树的size很小, 默认是6, 那就将红黑树退化成链表;
+
+5. 如果该位置的数据结构是链表, 那就重新计算链表中元素的hash值并分配到对应位置。
+
+    > 由于扩容数组的长度是原来的2倍, 所以假设初始oldCap=4, 要扩容到newCap=8时, 在二级制中就是 0100 到 1000的变化, 也就是左移一位就是2倍，
+
 #### 2.2 remove删除元素
 
 `remove`源码如下:
@@ -595,3 +629,144 @@ TreeNode<K,V> right;
 TreeNode<K,V> prev;    // needed to unlink next upon deletion
 boolean red;
 ```
+
+在`put`方法添加元素时, 将元素插入到红黑树用到了`TreeNode.putTreeVal`:
+
+```java
+final TreeNode<K,V> putTreeVal(HashMap<K,V> map, Node<K,V>[] tab,
+                                int h, K k, V v) {
+    Class<?> kc = null;
+    boolean searched = false;
+    // 获取到root节点
+    TreeNode<K,V> root = (parent != null) ? root() : this;
+    for (TreeNode<K,V> p = root;;) {
+        // dir表示查询方向
+        int dir, ph; K pk;
+        // 要插入的位置在树的左侧
+        // 树化会依据key的hash值
+        if ((ph = p.hash) > h)
+            dir = -1;
+        // 要插入的位置在树的右侧
+        else if (ph < h)
+            dir = 1;
+        else if ((pk = p.key) == k || (k != null && k.equals(pk)))
+            return p; //找到了，替换即可
+
+        // comparableClassFor是如果key实现了Comparable就返回具体类型，否则返回null
+        // compareComparables是比较传入的key和当前遍历元素的key
+        // 只有当前hash值与传入的hash值一致才会走到这里
+        else if ((kc == null &&
+                    (kc = comparableClassFor(k)) == null) ||
+                    (dir = compareComparables(kc, k, pk)) == 0) {
+            if (!searched) {
+                TreeNode<K,V> q, ch;
+                //左右都查过了
+                searched = true;
+                // 通过hash和Comparable都找不到，只能从根节点开始遍历
+                if (((ch = p.left) != null &&
+                        (q = ch.find(h, k, kc)) != null) ||
+                    ((ch = p.right) != null &&
+                        (q = ch.find(h, k, kc)) != null))
+                    return q;
+            }
+            // 元素的hashCode一致，且没有实现Comparable，在树里也没有
+            // tieBreakOrder则是调用System.identityHashCode(Object o)来进行比较，
+            //它的意思是说不管有没有覆写hashCode，都强制使用Object类的hashCode
+            // 这样做，是为了保持一致性的插入
+            dir = tieBreakOrder(k, pk);
+        }
+        
+         // 代码执行到这，说明没有找到元素，也就是需要新建并插入了
+        TreeNode<K,V> xp = p;
+        // 经历过上述for循环，p已经到某个叶节点了
+        if ((p = (dir <= 0) ? p.left : p.right) == null) {
+            Node<K,V> xpn = xp.next;
+            TreeNode<K,V> x = map.newTreeNode(h, k, v, xpn);
+            if (dir <= 0)
+                xp.left = x;
+            else
+                xp.right = x;
+            xp.next = x;
+            x.parent = x.prev = xp;
+            if (xpn != null)
+                ((TreeNode<K,V>)xpn).prev = x;
+            
+            // moveRootToFront目的很明确也是必须的。
+            // 因为这个红黑树需要挂在数组的某个位置，所以其首个元素必须是root
+            // balanceInsertion是因为插入元素后可能不符合红黑树定义了
+            // 这部分知识在分析TreeMap中有详细介绍
+            // 需要了解的话可以查看文末链接
+            moveRootToFront(tab, balanceInsertion(root, x));
+            return null;
+        }
+    }
+}
+```
+
+看到这, 估计很多人都蒙了。虽然上面的代码, 都有注释, 但是还是很难理解, 所以我们配合一些简单的示意图还理解源码。
+
+### 4. 图解put方法过程
+
+我们以put方法为例:
+
+在初始化`HashMap`时, 内部会定义table表`Node<K, V>[] table`。假设插入的数据的key在table表相同位置的hash值都一致, 并且都实现了`Comparable`接口。那么`Comparable`按照key的自然顺序比较, 下图表中的数字都表示key。
+
+![collection_hashmap_table](/image/collection_hashmap_table.png)
+
+上图的左侧是hash算法(`hash&(length-1)`)完成后的hash值, 也就对应着哈希表的下标, 表中的数字是key值, 有的位置还没有数据, 有的位置已经插入一些数据, 并且由于hash冲突变成了链表, 假设`capacity`已经大于64(**64是可以树化的阈值**)
+
+1. 此时我们向表中插入一个hash=6的新元素。由于6的位置是空的, 所以元素直接插入表中:
+
+    ![collection_hashmap_table1](/image/collection_hashmap_table1.png)
+
+2. 我们继续插入一个hash=6的值, 由于6的位置已经存在一个元素, 于是在比较key值是否相同, 如果相同那就是直接覆盖原值, 否则新的元素会通过链表的方式插入到18的后面, 如下:
+
+    ![collection_hashmap_table2](/image/collection_hashmap_table2.png)
+
+3. 我们在插入几个hash=6的元素, 直接让其达到链表变为红黑树的阈值(默认是8):
+
+    ![collection_hashmap_table3](/image/collection_hashmap_table3.png)
+
+4. 此时6的位置上已经存在8个元素了, 然后我们在插入一个hash=6的元素, 就需要进行树化, 用红黑树代替链表来提升查询性能。
+
+    > 在进行树化时, 先获取第一个元素18, 将其转为`TreeNode`节点, 并设置为head。然后把后续节点遍历转为`TreeNode`节点, 并依次插入到head之后, 也就是它们的**prev域**指向前一个元素, **next域**指向后一个元素。
+
+    ![collection_hashmap_table4](/image/collection_hashmap_table4.png)
+
+5. 转为树节点之后, 需要通过head, 也就是上图的18, 来调整为红黑树结构。
+
+    > 1. 首先, 18就是作为root节点, 所以红黑树根节点颜色设置为黑色;<br>
+
+    > 2. 然后比较18与20, 它们的hash值都一样, 所以会采用`Comparable`来比较它们的key值, 此时20应该是18的右孩子, 而且20节点的颜色是红色, 符合红黑树的规则;<br>
+
+    ![collection_hashmap_redblacktree1](/image/collection_hashmap_redblacktree1.png)
+
+    > 3. 再调整31, 31在20的右侧, 如下:
+
+    ![collection_hashmap_redblacktree2](/image/collection_hashmap_redblacktree2.png)
+
+    > 4. 经过第3步时, 已经破坏了红黑树, 根据红黑树的规则, 进行调整, 这里不再展示过程了。
+
+    ![collection_hashmap_redblacktree3](/image/collection_hashmap_redblacktree3.png)
+
+    > 5. 如果这里仅仅是一个红黑树, 那么就已经调整完毕了, 但是**我们知道这个红黑树是挂在hash表中的, 所以其根节点必须要在首位。也就是说根节点必须要在table的位置上。**经过上面的操作, 此时根节点已经从18变成了20, 所以我们需要把新的root与原root在table表中的位置进行交换, 如下:
+
+    ![collection_hashmap_redblacktree4](/image/collection_hashmap_redblacktree4.png)
+
+    > 6. 我们按照上面的规则, 不断的调整元素, 最终的红黑树结果如下:
+
+    ![collection_hashmap_redblacktree5](/image/collection_hashmap_redblacktree5.png)
+
+### 5. 总结
+
+`HashMap`应该是目前位置最复杂的一个集合类了。不仅要深入的理解红黑树的结构, 还需要了解`HashMap`每一个阶段发生的原因, 以及对应的操作。
+
+对于使用`HashMap`注意下面几点, 可以尽量的保证`HashMap`的优势:
+
+1. 设计key对象一定要实现`hashcode`方法, 并尽可能保证均匀少重复;
+
+2. 由于树化过程会依次通过 比较 **`hash`值, key值** 进行排序, 所以key还可以实现`Comparable`, 以方便树化排序;
+
+3. 如果可以预先估计数量级, 可以指定初始容量`iniyial capacity`, 来减少`resize`的过程;
+
+4. 虽然`HashMap`引入了红黑树, 但它的使用是很少的, 如果大量出现红黑树, 说明数据本身设计的不合理, 我们应该从数据源寻找优化方案。
