@@ -250,6 +250,9 @@ hash & (length - 1)
 
 ![collection_hashmap_tablesize2n](/image/collection_hashmap_tablesize2n.png)
 
+还有一点, **在数组扩容时, 扩容的数组长度是原来的2倍。假设初始oldCap=4, 要扩容到newCap=8时, 在二进制中就是 0100 到 1000的变化, 也就是左移一位就是2倍。**
+
+
 ### 2. HashMap核心方法
 
 无论是`List`还是`Map`, 最重要的操作都是增删改查部分, 对于HashMap来说, 添加元素是最重要也是非常复杂的功能之一。
@@ -496,7 +499,8 @@ final Node<K,V>[] resize() {
 
 我们可以看到`resize`的代码逻辑比较复杂, 首先我们要知道扩容的时机:
 
-**当`HashMap`中包含的`Entry`的数量大于等于`threshold = loadFactor * capacity`的时候, 此时触发扩容机制, 也就是调用`resize`方法, 将其容量扩大为原来的2倍(这里的原因跟之前说的数组长度必须是2的n次幂一样)。**
+**当`HashMap`中包含的`Entry`的数量大于等于`threshold = loadFactor * capacity`的时候, 此时触发扩容机制, 也就是调用`resize`方法, 将其容量扩大为原来的2倍。**
+
 
 那么对`resize`的执行步骤如下:
 
@@ -510,8 +514,18 @@ final Node<K,V>[] resize() {
 
 5. 如果该位置的数据结构是链表, 那就重新计算链表中元素的hash值并分配到对应位置。
 
-    > 由于扩容数组的长度是原来的2倍, 所以假设初始oldCap=4, 要扩容到newCap=8时, 在二级制中就是 0100 到 1000的变化, 也就是左移一位就是2倍，**所以扩容时, 如果遇到链表结构时, 只需要判断原来的hash值与原来的table长度进行`&`与运算**
+    > HashMap的resize时, 对链表进行了优化处理。按照传统的方式扩容, 需要去遍历链表, 然后重新比较hash值以及key值, 最后再放入新的索引位置。<br>
+    > 计算节点在table的下标的方法是: `hash & (oldTable.length - 1)`, 扩容之后, table的长度翻倍, 计算table下标的方式是 `hash & (newTable - 1)`, 也就是`hash & (oldTable.length * 2 - 1)`, 所以我们可以得到一个结论: **链表中的元素计算下标的结果, 要么是与旧下标相同, 要么就是新下标等于旧下标加上旧数组的长度。**
 
+    假设table原长度是16, 扩容后长度就是32, 那么一个hash值在扩容前后的table下标计算如下:
+
+    ![collection_hashmap_resize](/image/collection_hashmap_resize.png)
+
+    从图中可以看到, 链表中元素的hash值, 与新旧table的长度进行按位与运算的结果, 最后四位显然是相同的, 唯一可能出现的区别的地方就在第5位, 也就是hash值b所在的位置, 如果b所在的位置是运算结果是0, 那么这个元素的位置与新table相同, 反之如果b所在的位置是1, 则新table重新计算的位置结果就比原来的位置多了10000(二进制), 而这个二进制10000的结果就是旧table的长度16。
+
+    所以在代码中`e.hash & oldCap`, 链表元素的hash值与旧table的长度进行按位与`&`运算的结果。 如果最终结果是0, 则表示新下标就等于原下标, 如果不等于那么新下标等于旧下标的长度加上当前元素的位置。
+
+   
 #### 2.2 remove删除元素
 
 `remove`源码如下:
