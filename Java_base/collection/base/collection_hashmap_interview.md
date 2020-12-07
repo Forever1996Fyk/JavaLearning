@@ -129,7 +129,65 @@
 
 ### 12. 构造HashMap时, 如果传入的初始容量值不是2的n次幂怎么办?
 
+`HashMap`中对传入的初始化容量参数进行校验, 如果不是2的n次幂, 就通过一定的方法, 找到大于这个值的最近的2的n次幂。
+
+具体的方法: 
+
+因为我们发现`2^n-1`的值二进制, 低位都是1, 其他位都是0, 所以将原值通过无符号右移分别右移1次, 2次, 4次, 8次, 16次 并且 每次右移在与之前的值进行或运算`|`, 然后可以得到`2^n-1`的二进制, 最后再加1即可。
+
 ### 13. 为什么HashMap的容量一定是2的n次幂?
+
+`HashMap`中的hash算法是:
+
+```java
+hashcode & (length - 1)
+```
+
+其中length就是数组长度, hash就是插入值的hash值, 如果length=2^n的话, 那么length-1 = 2^n-1。
+
+我们通过上面的示例分析可以看到, 2^n-1用二进制表示, 所有位一定都是1, 此时跟hash值进行`&`与运算, 则可以完整保留原来的hash值的二进制数据。这样基本上很少会出现hash碰撞, 因为只要插入的key不相同, 基本上就不会出现hash碰撞。(除非hash值比较相近)
+
+相反的, 如果数组长度不是2的n次幂, 则出现hash碰撞的可能性会大大提高。如下图示例:
+
+![collection_hashmap_tablesize2n](/image/collection_hashmap_tablesize2n.png)
+
+还有一点, **在数组扩容时, 扩容的数组长度是原来的2倍。假设初始oldCap=4, 要扩容到newCap=8时, 在二进制中就是 0100 到 1000的变化, 也就是左移一位就是2倍。**
+
+### 14. HashMap为什么用红黑树而不用AVL(平衡二叉树), 或者B+树?
+
+AVL是一个高度平衡的二叉查找树, 它虽然保证了搜索, 插入, 删除操作平均的时间复杂度都是O(log n), 但是增加和删除可能需要通过一次或多次的旋转来重新平衡这个树。
+
+但是红黑树并不追求完美, 它只要求部分平衡, 降低旋转的要求。
+
+红黑树是牺牲了严格的高度平衡为代价, 来提升性能。
+
+> 红黑树常常不会单独使用, 而是与数组关联。也就是类似`HashMap`的实现方式。`TreeMap`和`TreeSet`的实现底层都是直接通过红黑树算法, 也就意味着`TreeMap`添加元素, 取出元素的性能都比`HashMap`低。
+
+`TreeMap`添加元素, 都需要通过循环找到新增的Entry插入位置, 因此比较消耗性能, 而取出元素, 也需要遍历树。
+
+所以合理的使用红黑树可以提高性能, 反正可能回影响性能。
+
+
+### 15. HashMap和HashTable有什么区别?
+
+1. `HashMap`是线程不安全的, `HashTable`是线程安全的;
+2. `HashMap`最多允许一条记录的键为null, 允许多条记录的值为null, 但是`HashTable`不允许;
+3. `HashMap`默认初始化数组的大小为16, `HashTable`为11, 前者扩容时, 大小为原来的2倍, 后者扩大2倍加1;
+4. `HashMap`需要重新计算hash值, 而`HashTable`直接使用对象的hashCode。
+
+### 16. Java中另一个线程安全的与`HashMap`极其类似的类是什么? 同样是线程安全的, 它与`HashTable`在线程同步上有什么不同?
+
+这个类是`ConcurrentHashMap`类。在JDK1.7中采用分段锁的方式, JDK1.8中直接采用CAS的方式。
+
+而`HashTable`是直接通过`synchronized`关键字加锁。
+
+### 17. 针对 ConcurrentHashMap 锁机制具体分析(JDK 1.7 VS JDK 1.8)?
+
+### 18. ConcurrentHashMap在JDK1.8中, 为什么要使用内置锁synchronized来代替重入锁ReentrantLock?
+
+### 19. ConcurrentHashMap 简单介绍?
+
+### 20. ConcurrentHashMap 的并发度是什么?
 
 
 

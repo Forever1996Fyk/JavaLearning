@@ -236,10 +236,10 @@ return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 
 > 为什么底层数组的长度总是要2的n次幂呢?
 
-首先要知道JDK1.7之前的`HashMap`中的hash算法是:
+`HashMap`中的hash算法是:
 
 ```java
-hash & (length - 1)
+hashcode & (length - 1)
 ```
 
 其中length就是数组长度, hash就是插入值的hash值, 如果length=2^n的话, 那么length-1 = 2^n-1。
