@@ -20,6 +20,7 @@
             * [Collection接口分析](Java_base/collection/base/collection_collection.md)
             * [List接口分析](Java_base/collection/base/collection_list.md)
             * [ArrayList源码分析](Java_base/collection/base/collection_arraylist.md)
+        * [Map集合](Java_base/collection/base/start.md)
             * [Map接口分析](Java_base/collection/base/collection_map.md)
             * [TreeMap源码分析](Java_base/collection/base/collection_treemap.md)
             * [HashMap源码分析](Java_base/collection/base/collection_hashmap.md)
