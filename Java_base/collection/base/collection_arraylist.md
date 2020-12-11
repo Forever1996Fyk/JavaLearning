@@ -303,9 +303,16 @@ private void writeObject(java.io.ObjectOutputStream s)
 }
 ```
 
+根据`writeObject`方法可知, 先调用`s.defaultWriteObject`方法, 再把size写入流中, 再根据size遍历数组元素, 一个一个的写入流中。
+
+一般情况下, 只要实现了`Serializable`接口即可自动序列化, `writeObject`和`readObject`是为了自定义控制序列化的方式, 这两个方法必须声明为private, 
+因为在`java.io.ObjectStreamClass#getPrivateMethod()`方法中通过反射获取到`writeObject`这个方法。
+
+我们知道`size`是数组中元素的数量, `elementData`定义为`transient`的优势, 就是只需要根据size的大小, 序列化真实的元素, 而不是根据数组的长度序列化元素, 减少了空间占用。
+
 上面的是`ArrayList`进行序列化的源码, 通过这段代码我们知道了
 
-- `elementData`被`transient`修饰, 也就是不会参与序列化。存储数据的数组本身不会序列化, 而是遍历数组的中的数据进行序列化;
+- `elementData`被`transient`修饰, 也就是不会参与序列化;
 - `size`属性也被写入序列化;
 - `modCount`的作用也在此体现, 如果序列化进行修改操作时, 就会抛出异常。
 
