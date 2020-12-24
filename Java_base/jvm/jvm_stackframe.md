@@ -148,3 +148,5 @@ index0: this; index1: a; 变量c重复使用了b的索引号。
 ### 3. 操作数栈(Operand Stack)
 
 
+
+
