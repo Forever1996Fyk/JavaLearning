@@ -89,3 +89,103 @@ JDK7以前: **逻辑上**分为 *年轻代*、*老年代*、*永久代*。但是
 - `Permanent Space`: 永久代Prem。
 
 ![jvm_heap2](/image/jvm_heap2.png)
+
+JDK8之后: 在逻辑上分为 *年轻代*、*老年代*、*元空间*。
+
+- `Meta Space`
+
+#### 1.4 设置堆内存大小与OOM
+
+Java堆是用于村粗Java对象实例, 堆的大小在JVM启动时就已经设定好了, 我们可以用个`-Xmx`和`-Xms`来进行设置。
+
+- **`-Xms`用来设置堆空间(老年代+年轻代)的初始内存大小, 等价于`-XX:InitialHeapSize`**
+
+    - `-X` 是JVM运行参数;
+
+    - `ms` 是memory start。
+
+
+- **`-Xmx`用来设置堆的最大内存, 等价于`-XX:MaxHeapSize`**
+
+    - 默认情况下, 初始内存大小为 **物理内存大小/64**; 最大内存大小为 **物理内存大小/4**。
+
+    - 手动设置: `-Xmx600m`, `-Xms600m`; 在IDEA中配置`Run Edit Configuration`->`VM Options`添加参数即可
+
+    > 一旦堆的内存大小超过了`-Xmx`所指定的最大内存时, 就会抛出OOM异常
+
+#### 1.5查看堆内存大小
+
+在Java程序运行时, 我们在终端通过`jps`命令, 可以看到运行时java程序的进程id; 再通过`jstat -gc 进程id`命令打印堆内存信息。
+
+我们设置堆内存大小为10m, `-Xmx10m -Xms10m`:
+
+```java
+public class HeapSpace {
+
+    public static void main(String[] args) {
+        //返回Java虚拟机中的堆内存总量
+        long initialMemory = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+        //返回Java虚拟机试图使用的最大堆内存量
+        long maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024;
+
+        System.out.println("-Xms : " + initialMemory + "M");//-Xms : 245M
+        System.out.println("-Xmx : " + maxMemory + "M");//-Xmx : 3641M
+
+        System.out.println("系统内存大小为：" + initialMemory * 64.0 / 1024 + "G");//系统内存大小为：15.3125G
+        System.out.println("系统内存大小为：" + maxMemory * 4.0 / 1024 + "G");//系统内存大小为：14.22265625G
+
+        try {
+            Thread.sleep(1000000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+打印结果为:
+
+```java
+-Xms : 9M
+-Xmx : 9M
+系统内存大小为：0.5625G
+系统内存大小为：0.03515625G
+```
+
+我们使用**jps查看进程:**
+
+```java
+yukaifan@192 jvm % jps
+
+//进程id  程序名称
+  29203  Launcher
+  29204  HeapSpace
+  29214  Jps
+```
+
+再通过 **`jstat -gc 进程id`查看JVM堆内存信息:**
+
+```java
+yukaifan@192 jvm % jstat -gc 29204
+
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT   
+512.0  512.0   0.0   496.0   2048.0   532.5     7168.0     228.0    4864.0 3436.0 512.0  379.8       1    0.001   0      0.000    0.001
+
+```
+
+我们先简单解释下, 上面JVM内存信息的意思:
+
+- `S0C`, `S1C`分别表示`Survior0区`, `Survior1区`所占总内存;
+
+- `S0U`, `S1U`分别表示`Survior0区`, `Survior1区`已用内存; 我们发现Survior0, Survior1始终会有一个是空的;
+
+- `EC`, 表示新生代所占总内存;
+
+- `EU`, 表示新生代已用内存;
+
+- `OC`, 表示老年代所占总内存;
+
+- `OU`, 表示老年代已用内存。
+
+
+> 我们把`S0C`, `S1C`, `EC`, `OC`全部加起来, 正好等于10M, 也是我们设置的堆内存大小。但是运行程序时控制台打印的是9M, 是因为其中`Survior区`只有一个占用了内存, 另一个没有使用, 所以没有算上去。
