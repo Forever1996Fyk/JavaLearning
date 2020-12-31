@@ -194,3 +194,5 @@ public class HeapInstance {
 
 > `Full GC`是开发或调优中尽量要避免的, 这样用户线程等待时间会短一些。
 
+
+
