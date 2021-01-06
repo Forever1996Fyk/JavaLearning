@@ -114,3 +114,69 @@
 这部分存储的数据其实很多, 已经超过了32,64位Bitmap结构所能记录的限制, 考虑到虚拟机的空间效率。**`Mark Word`被设计成一个非固定的数据结构以便在极小的空间内存储尽量多的信息。**
 
 > 例如在32位HotSpot虚拟机中对象未被锁定的状态下, `Mark Word`的32位空间中, 25bit用于存储对象哈希码(HashCode), 4bit用于存储对象分代年龄, 2bit存储锁标志位, 1bit固定为0。
+
+这里的锁标志, 还涉及到锁状态升级过程! 可以看这篇文章[深入Synchronized](/java_base/concurrent/base/thread_synchronized_deep.md)
+
+#### 3.2 类型指针
+
+**类型指针**是对象指向它的类的元数据的指针`InstanceKlass`, 确定该对象所属的类型。但是并不是所有的虚拟机实现都必须在对象数据上保留类型指针, 也就是说查找对象的元数据信息并不一定要经过对象本身。
+
+如果对象是一个Java数组, 那么对象头中还必须有一块记录数组长度的数据,虚拟机可能通过Java对象的元数据确定Java对象的大小, 但是从数组的元数据中无法确定数组的大小。
+
+> 类型指针就是指向元数据区类信息
+
+#### 3.3 JVM运行时数据区详细关系图
+
+我们看下简单的示例代码:
+
+```java
+public class CustomerDemo {
+    public static void main(String[] args) {
+        Customer customer = new Customer();
+    }
+}
+
+public class Customer {
+    private String id = "1001";
+    private String name;
+    private Account acct;
+}
+
+public class Account {
+
+}
+```
+
+上面的代码在JVM运行时数据区的关联图:
+
+![jvm_objectlayout1](/image/jvm_objectlayout1.png)
+
+### 4. 对象访问定位
+
+创建对象的目的就是为了使用对象。Java程序中需要通过栈上的`reference`数据来操作堆上的具体对象。
+
+对象的访问方式主要有两种: **句柄访问**, **直接指针**。 HotSport VM使用的就是直接指针的方式。
+
+![jvm_objectlayout2](/image/jvm_objectlayout2.png)
+
+#### 4.1 句柄访问
+
+Java堆中会划分一块内存作为句柄池, `reference`中存储的就是对象的句柄地址, 而句柄池包含了指向对象实例数据的指针,以及指向对象元数据(类型数据)的指针。
+
+![jvm_objectlayout3](/image/jvm_objectlayout3.png)
+
+句柄定位方式优缺点:
+
+- 缺点: 占用空间, 间接指向对象实例;
+
+- 优点: 定位稳定, 当对象实例发生移动(垃圾回收, 内存整理), 则不需要修改`reference`中的句柄地址, 只需要在句柄内修改间接地址, 重新定位到对象实例即可。
+
+#### 4.2 直接指针
+
+直接指针访问, Java堆中的对象布局中就必须考虑如何放置类型数据的相关信息, 因为需要指向方法区中的对象类型信息。 `reference`存储的直接就是对象的地址。
+
+![jvm_objectlayout4](/image/jvm_objectlayout4.png)
+
+
+
+
