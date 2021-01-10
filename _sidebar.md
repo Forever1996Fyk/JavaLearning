@@ -76,6 +76,7 @@
         * [JVM运行时数据区--方法区](Java_base/jvm/jvm_methodarea.md)
         * [JVM对象布局与访问定位](Java_base/jvm/jvm_objectlayout.md)
         * [JVM字符串常量池](Java_base/jvm/jvm_stringtable.md)
+        * [JVM垃圾回收概述](Java_base/jvm/jvm_gc.md)
         * [JVM相关面试题](Java_base/jvm/jvm_interview.md)
     * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
