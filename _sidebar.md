@@ -77,6 +77,8 @@
         * [JVM对象布局与访问定位](Java_base/jvm/jvm_objectlayout.md)
         * [JVM字符串常量池](Java_base/jvm/jvm_stringtable.md)
         * [JVM垃圾回收概述](Java_base/jvm/jvm_gc.md)
+        * [JVM垃圾回收标记算法](Java_base/jvm/jvm_gc_mark_algorithm.md)
+        * [JVM垃圾回收清除算法](Java_base/jvm/jvm_gc_clean_algorithm.md)
         * [JVM相关面试题](Java_base/jvm/jvm_interview.md)
     * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
