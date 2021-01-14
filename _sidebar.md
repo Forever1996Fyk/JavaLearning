@@ -82,6 +82,7 @@
         * [垃圾回收相关概念](Java_base/jvm/jvm_gc_base.md)
         * [JVM中的引用类型](Java_base/jvm/jvm_reference_type.md)
         * [垃圾回收器相关知识](Java_base/jvm/jvm_gc_collector.md)
+        * [垃圾回收器解析](Java_base/jvm/jvm_gc_collector_detail.md)
         * [JVM相关面试题](Java_base/jvm/jvm_interview.md)
     * [开发框架](develop_framework/start.md)
     * [Spring](develop_framework/Spring/Spring.md)
