@@ -88,3 +88,4 @@ Serial Old不仅是与Serial配合使用的老年代收集器, 而且也是作�
 - `-XX+UseAdaptiveSizePolicy`设置PS收集器的自适应调节策略。
 
     - 在这种模式下, 年轻代的大小, Eden和Survivor的比例, 晋升老年代的分代年龄等参数会被自动调整, 来达到堆大小, 吞吐量和停顿时间的平衡点。
+
