@@ -177,10 +177,140 @@ NULL -> system -> const -> eq_ref -> ref -> range -> index -> all
 
 **一般来说, 我们需要保证查询最多达到range级别, 最好达到ref级别.**
 
-#### 3.4 explain之key
+#### 3.4 explain之extra
+
+extra是sql执行的额外信息。一般如下:
+
+| extra | 含义 |
+| -- | -- |
+| using filesort | 说明mysql会对数据使用一个外部的索引排序, 而不是按照表内的索引顺序进行读取, 也就是**文件排序**, 效率很低 |
+| using temporary | 使用临时表保存中间结果, MySQL对查询结果进行排序时使用临时表。例如: order by 和 grouy by; 效率低 |
+| using index | 表示select操作使用了覆盖索引, 避免访问表的数据行, 效率高 |
 
 
-    
+### 4. show profile 分析 SQL
+
+#### 4.1 开启profile
+
+`show profiles` 能够在SQL执行后, 分析每个SQL执行的时间, 以及每个步骤所花费的事件。
+
+通过下面的命令, 判断MySQL版本是否支持profile:
+
+```sql
+select @@having_profiling;
+```
+
+输出YES, 就表明是支持的。
+
+但是默认profile是关闭的, 可以通过set语句在session级别开启profiling:
+
+```sql
+select @@profiling;
+```
+
+输出0, 表示关闭。
+
+```sql
+set profiling=1; //开启profiling;
+```
+
+#### 4.2 使用profile
+
+通过profile, 我们嫩egg更清楚的了解SQL执行的过程以及花费时间。
+
+- 首先我们可以先执行一系列的操作:
+
+    ```sql
+    show databases;
+
+    use db01; 
+
+    show tables; 
+
+    select * from tb_item where id < 5; 
+
+    select count(*) from tb_item;
+    ```
+
+- 然后在执行`show profiles`命令:
+
+    ![mysql_optimization9](/image/mysql_optimization9.png)
+
+- 通过`show profile for query [query_id]`语句可以查看SQL执行每个线程的消耗时间:
+
+    ![mysql_optimization10](/image/mysql_optimization10.png)
+
+    获取到最消耗时间的线程后, MySQL支持进一步选择 **`all`, `block io`, `context switch`, `page faults`** 等明细类型查看MySQL在什么资源商耗费过高的时间。例如选择查看CPU耗费时间:
+
+    ![mysql_optimization11](/image/mysql_optimization11.png)
+
+
+### 5. trace分析优化器执行计划
+
+MySQL5.6提供了对SQL的跟踪trace, 通过trace文件能够进一步了解为什么优化器选择A计划, 而不是选择B计划。
+
+- 开启trace; 
+
+    ```sql
+    set optimizer_trace="enabled=on", end_markers_in_json = on;
+    ```
+
+- 设置trace的格式为json; 
+
+- 设置trace醉倒能够使用的内存大小, 避免解析过程中因为默认内存过小而不能够完整展示。
+
+    ```sql
+    set optimizer_trace_max_mem_size=1000000;
+    ```
+
+执行SQL语句:
+
+```sql
+select * from tb_item where id < 4;
+```
+
+最后检查`information_schema.optimizer_trace`就可以知道MySQL是如何执行SQL的:
+
+```sql
+select * from information_schema.optimizer_trace\G;
+```
+
+```json
+*************************** 1. row *************************** QUERY: 
+select * from tb_item where id < 4 
+TRACE: { 
+    "steps": [ 
+        { 
+            "join_preparation": { 
+                "select#": 1, 
+                "steps": [ 
+                    { "expanded_query": "/* select#1 */ select `tb_item`.`id` AS `id`,`tb_item`.`title` AS `title`,`tb_item`.`price` AS `price`,`tb_item`.`num` AS `num`,`tb_item`.`categoryid` AS `categoryid`,`tb_item`.`status` AS `status`,`tb_item`.`sellerid` AS `sellerid`,`tb_item`.`createtime` AS `createtime`,`tb_item`.`updatetime` AS `updatetime` from `tb_item` where (`tb_item`.`id` < 4)" 
+                    } 
+                    ] /* steps */ 
+                } /* join_preparation */ 
+            },
+            { "join_optimization": { 
+                "select#": 1, 
+                "steps": [ 
+                    { 
+                        "condition_processing": { 
+                            "condition": "WHERE", 
+                            "original_condition": "(`tb_item`.`id` < 4)", 
+                            "steps": [ 
+                                {"transformation": "equality_propagation", "resulting_condition": "(`tb_item`.`id` < 4)" 
+                                },
+                                { "transformation": "constant_propagation", "resulting_condition": "(`tb_item`.`id` < 4)" 
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
 
 
 
