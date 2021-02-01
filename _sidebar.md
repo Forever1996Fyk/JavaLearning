@@ -146,7 +146,7 @@
         * [MySQL基础](database/MySQL/MySQL_Base.md)
         * [MySQL高级](database/MySQL/mysql_advanced/base.md)
             * [MySQL索引](database/MySQL/mysql_advanced/mysql_index.md)
-            * [MySQL BTree](database/MySQL/mysql_advanced/mysql_btree.md)
+            * [MySQL BTree](database/MySQL/mysql_advanced/mysql_b_tree.md)
             * [MySQL优化基础](database/MySQL/mysql_optimization/mysql_optimization_base.md)
             * [MySQL索引的使用与优化](database/MySQL/mysql_optimization/mysql_optimization_index.md)
         * [MySQL集群](database/MySQL/MySQL_Cluster/MySQL_Cluster.md)
