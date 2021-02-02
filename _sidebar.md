@@ -150,6 +150,7 @@
             * [MySQL索引原理](database/MySQL/mysql_advanced/mysql_index_deep.md)
             * [MySQL优化基础](database/MySQL/mysql_optimization/mysql_optimization_base.md)
             * [MySQL索引的使用与优化](database/MySQL/mysql_optimization/mysql_optimization_index.md)
+            * [MySQL锁机制](database/MySQL/mysql_advanced/mysql_lock_deep.md)
         * [MySQL集群](database/MySQL/MySQL_Cluster/MySQL_Cluster.md)
             * [MySQL主从复制](database/MySQL/MySQL_Cluster/MySQL_MasterSlave.md)
             * [Binlog详解](database/MySQL/MySQL_Cluster/MySQL_Binlog.md)
