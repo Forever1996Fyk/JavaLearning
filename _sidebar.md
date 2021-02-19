@@ -158,6 +158,5 @@
         * [MyCat](database/MySQL/MySQL_Cluster/MyCat/MyCat.md)
             * [MyCat配置](database/MySQL/MySQL_Cluster/MyCat/MyCat_Config.md)
             * [MyCat分片规则](database/MySQL/MySQL_Cluster/MyCat/MyCat_Rule.md)
-
-
-
+    * [Redis](database/Redis/start.md)
+        * [Redis基础知识](database/Redis/redis_base.md)
