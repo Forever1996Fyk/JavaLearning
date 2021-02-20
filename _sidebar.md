@@ -160,3 +160,7 @@
             * [MyCat分片规则](database/MySQL/MySQL_Cluster/MyCat/MyCat_Rule.md)
     * [Redis](database/Redis/start.md)
         * [Redis基础知识](database/Redis/redis_base.md)
+        * [Redis通信协议RESP](database/Redis/redis_protocol.md)
+        * [Redis线程模型](database/Redis/redis_threadmodel.md)
+        * [Redis事务](database/Redis/redis_transaction.md)
+        * [Redis持久化](database/Redis/redis_persistence.md)
