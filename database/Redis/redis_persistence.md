@@ -93,3 +93,127 @@ RDB文件的载入工作是在服务器启动时自动加载的, 如果Redis没�
 
     - 无法实时持久化, 就会存在数据丢失问题。定时执行持久化过程, 如果这个过程中服务器崩溃了, 会导致这段时间的数据全部丢失。
 
+### 2. AOF
+
+**RDB最大的问题就是它提供的持久化策略不是实时的, 会存在数据丢失的问题。**
+
+所以Redis提供了AOF方案。
+
+`AOF`全称`append only file`, 它是将每一行对Redis数据进行修改的命令以独立日志的方式存储起来。所以我们可以直接利用该日志文件, 还原所有操作, 达到恢复数据的目的。**它的目的是解决了数据持久化的实时性。**
+
+> AOF默认关闭, 需要在配置文件redis.conf中开启, `appendonly yes`。
+
+redis.conf 中的AOF相关配置如下:
+
+```conf
+## aof功能的开关，默认为“no”，修改为 “yes” 开启  
+## 只有在“yes”下，aof重写/文件同步等特性才会生效  
+appendonly no  
+
+## 指定aof文件名称  
+appendfilename appendonly.aof  
+
+## 指定aof操作中文件同步策略，有三个合法值：always everysec no,默认为everysec  
+# appendfsync always  
+ appendfsync everysec 
+# appendfsync no 
+
+##在aof-rewrite期间，appendfsync是否暂缓文件同步，"no"表示“不暂缓”，“yes”表示“暂缓”，默认为“no”  
+no-appendfsync-on-rewrite no  
+
+## aof文件rewrite触发的最小文件尺寸(mb,gb),只有大于此aof文件大于此尺寸是才会触发rewrite，默认“64mb”，建议“512mb”  
+auto-aof-rewrite-min-size 64mb  
+
+## 相对于“上一次”rewrite，本次rewrite触发时aof文件应该增长的百分比。  
+## 每一次rewrite之后，redis都会记录下此时“新aof”文件的大小(例如A)，那么当aof文件增长到A*(1 + p)之后  
+## 触发下一次rewrite，每一次aof记录的添加，都会检测当前aof文件的尺寸。  
+auto-aof-rewrite-percentage 100  
+```
+
+#### 2.1 AOF执行流程
+
+AOF总共分为三个流程:
+
+1. 命令写入
+
+2. 文件同步
+
+3. 文件重写
+
+#### 2.2 命令写入
+
+Redis在命令写入时, 会先将命令写入到`aof_buf`缓冲区中, 因为Redis是单线程的, 如果每次直接追加到aof日志文件中就相当于进行一次磁盘IO, 那么性能肯定会受到影响。
+
+#### 2.3 文件同步
+
+命令写入`aof_buf`缓冲区, 然后根据不同的策略刷新到硬盘中。Redis提供了三种不同的不同策略: `always`, `everysec`, `no`, 由appendfsunc控制。
+
+- `always`: 每天命令都会同步到硬盘中, 是最安全的方式, 但是对硬盘压力较大, 无法满足Redis高性能的要求, 所以一般不采用这种策略;
+
+- `everysec`: 每秒同步一次, 这是redis推荐的方式, 但是如果遇到服务器故障, 可能会丢失最近2秒的记录;
+
+    这里之所以最多会丢失2秒的记录, 因为当Redis主线程将AOF缓冲区的数据写入文件之前, 会与上次同步时间作对比, 如果大于2秒, 那么主线程就会进入阻塞状态。而此时如果Redis故障, 就会导致2秒内的数据丢失。
+
+    ![redis_persistence2](/image/redis_persistence2.png)
+    
+
+- `no`: Redis服务并不会直接参与同步, 而是将控制权交给操作系统, 根据实际情况来触发同步, 但是这种方式不可控, 所以一般也不采用。
+
+#### 2.4 文件重写
+
+随着命令的不断写入, AOF文件会越来越大, 最终导致"数据恢复"的时间很长, 而且一些历史操作是可以废弃的(比如超时, del等), 所以redis提供了**文件重写**功能:
+
+1. 手动触发: `bgrewriteaof`命令
+
+2. 自动触发: 由`auto-aof-rewrite-min-size`和`auto-aof-rewrite-percentage`参数来确定自动触发时机。
+
+    - `auto-aof-rewrite-min-size`: 运行AOF重写时文件最小体积;
+
+    - `auto-aof-rewrite-percentage`: 当前AOF文件空间和上一次重写AOF文件空间的比值;
+
+    - 触发时机 = 当前AOF文件空间 > AOF重写时文件最小体积
+
+Redis主要重写AOF文件以下方面:
+
+1. 已过期的数据不再写入文件;
+
+2. 保留最终命令。例如: `set k1 v1`, `set k1 v2` ...  `set k1 vn`, 类似于这样的命令, 只会保留最后一个即可;
+
+3. 删除无用的命令。例如: `set k1 v1`, `del k1`。这样的命令是可以不写入文件;
+
+4. 多条命令合并成一条。 例如: `lpush list a`, `lpush list b`, `lpush list c`, 可以转化为`lpush list a b c`。
+
+### 3. AOF优缺点
+
+优点:
+
+- 相对于RDB而言, AOF更加安全, 默认同步策略为`everysec`即每秒同步一次;
+
+- AOF提供了不同的同步策略;
+
+- AOF写入性能更高, 因为AOF是`append-only`文件追加方式写入, 而RDB是全量写入。
+
+缺点:
+
+- 由于AOF日志文件是命令级别的, 所以相对于RDB紧致的二进制文件加载速度更慢;
+
+- AOF开启后, 支持写操作的QPS比RDB要低。
+
+    > 因为在AOF重写阶段, 可能会导致Redis阻塞。例如在主进程将重写的缓冲区写入到新的AOF文件。
+
+### 4. RDB 和 AOF混合模式
+
+我们知道RDB和AOF都有各自的优缺点:
+
+- RDB能够快速的存储和恢复数据, 但是服务器故障时可能会丢失大量的数据, 无法保证数据的实时性和安全性;
+
+- AOF能够实时的持久化数据, 但是在存储和恢复数据时效率更低。
+
+在Redis4.0推出了**RDB-AOF混合持久化**方案。
+
+**RDB-AOF混合模式**的原理如下:
+
+在AOF重写阶段会创建一个同时包含RDB数据和AOF数据的AOF文件, 其中RDB数据位于AOF文件的开头, RDB存储所有的数据状态, 重写操作执行后的Redis命令会继续追加在AOF文件末尾, 也就是RDB数据之后。
+
+在Redis重启时, 可以先加载RDB的内容, 然后在加载AOF日志内容, 这样重启的效率更高, 而且在Redis运行阶段Redis命令又会以AOF方式追加到日志文件中, 保证了数据的实时性和安全性。
+
