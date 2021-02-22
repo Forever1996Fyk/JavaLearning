@@ -174,3 +174,4 @@
             * [Redis集群搭建](database/Redis/redis_masterslave.md)
         * [Redis高频面试题]()
             * [Redis解决热点key问题](database/Redis/interview/redis_hotkey.md)
+            * [Redis缓存击穿与雪崩问题](database/Redis/interview/redis_highconcurrency.md)
