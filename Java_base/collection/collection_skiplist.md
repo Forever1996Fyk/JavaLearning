@@ -108,3 +108,5 @@ n/2 + (n/2)^2 + (n/2)^3 + ... + 8 + 4 + 2 = n-2
 ### 8. 跳表的应用
 
 最直接的应用就是Java并发包下的`ConcurrentSkipListMap`, 这里就不在解析了, 可以看这位大佬写的文章, 分析的很透彻. [Java集合之ConcurrentSkipListMap源码分析](https://www.cnblogs.com/tong-yuan/p/ConcurrentSkipListMap.html)
+
+在Redis也有一种有序的集合, 叫做zset, 它的底层数据结构也是跳表。

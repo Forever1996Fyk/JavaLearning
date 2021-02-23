@@ -225,3 +225,11 @@ String getLockName(long threadId) {
 ```
 
 Redisson内部的源码也是利用Lua脚本实现原子操作。
+
+### 5. Redis分布式锁主从架构锁失效问题如何解决
+
+这其实是个面试题, 只要看了上面的内容基本都可以答出来了。
+
+使用`setnx+lua`命令, 或者`set key value ex seconds`  这种方式加锁只能作用一个Redis节点上, 即使利用哨兵, 也会出现主从节点切换导致的锁丢失情况。
+
+所以一般有人问这个问题, 基本上就是回答RedLock算法, 或者Redisson实现。
