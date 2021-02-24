@@ -1,4 +1,4 @@
-## <center>RocketMQ基本概念</center>
+## RocketMQ基本概念
 
 > 什么是RocketMQ?
 
@@ -8,7 +8,7 @@
 
 #### 1.1 队列模型
 
-![rocket_queue](/distributed/MQ/img/rocket_queue.png)
+![rocket_queue](../image/rocket_queue.png)
 
 
 队列模型就是一个队列, 但是如果我们需要将一个消息发送给多个消费者(比如发送短信和邮件), 这时候单个队列就不能满足需求了。
@@ -23,7 +23,7 @@
 
 发布者将消息发送到指定主题中, 订阅者需要**提前订阅主题**才能接受特定主题的消息。
 
-![rocket_topic](/distributed/MQ/img/rocket_topic.png)
+![rocket_topic](../image/rocket_topic.png)
 
 #### 1.3 RocketMQ中的消息模型
 
@@ -31,7 +31,7 @@
 
 `Kafka`中的**分区**, `RocketMQ`中的**队列**, `RabbitMQ`中的`Exchange`。其实都是消息中间件的主题模型的底层基础。而**主题模型/发布订阅模型**就是一个标准, 消息中间件都是按照这个标准来实现的。
 
-![rocket_topic_model](/distributed/MQ/img/rocket_topic_model.png)
+![rocket_topic_model](../image/rocket_topic_model.png)
 
 - `Producer Group`生产者组: 代表一类的生产者, 一般生成相同的消息。例如多个秒杀系统作为生产者, 多个系统就是`Producer Group`生产者组。
 - `Consumer Group`消费者组: 代表一类消费者, 一般消费相同的消息。例如多个短信系统作为消费者。
@@ -45,7 +45,7 @@
 
 因为在发布订阅模式中一般会涉及多个消费者组, 而每个消费者组在每个队列中的消费位置都是不同的。如果此时有多个消费者组, 那么消息被一个消费者组消费完成之后是不会删除的(因为其他消费者组也需要), 它仅仅是为每个消费者组维护一个**消费位移(offset)**, 每次消费者组消费完会返回一个成功的响应, 然后队列再把维护的消费位移加一, 这样就不会出现刚刚消费过的消息再一次被消费了。
 
-![rocket_topic_offset](/distributed/MQ/img/rocket_topic_offset.png)
+![rocket_topic_offset](../image/rocket_topic_offset.png)
 
 > 为什么一个主题中需要维护多个队列?
 

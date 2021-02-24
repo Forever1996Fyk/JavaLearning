@@ -1,4 +1,4 @@
-## <center> Spring基础知识点 </center>
+## Spring基础知识点
 
 Spring的重要性应该不需要说明了。 这篇文章主要是加深对Spring的理解, 对之前Spring学习的一个总结。最主要的还是针对面试中常见的问题所延伸出来的思考。自己在学习的过程中也是结合以前写的博客以及查阅了很多资料, 自己总结出来的理解。
 
@@ -18,17 +18,18 @@ Spring官网列出的Spring的6个特征:
 * 集成: 远程处理, JMS, JCA, JMX, 电子邮件, 任务调度, 缓存。
 * 语言: Kotlin, Groovy, 动态语言。
 
-> 面试官有可能会问: ** 你既然用过Spring, 那你简单的描述一下, Spring常用的模块有哪些? **
-    <font color="red">这个问题看似可能很小, 但是面试官可能会从你对这些模块的了解程度上进行判断, 你在学习使用某个框架的时候是否认真的去了解这个框架, 还是只是会用而已。</font>
+> 面试官有可能会问: **你既然用过Spring, 那你简单的描述一下, Spring常用的模块有哪些?**
 
-    * Spring Core: Spring核心, 可以说Spring其他所有功能都需要依赖该类库。主要提供IOC依赖注入功能。
-    * Spring Aspects: 该模块与AspectJ的集成提供支持。
-    * Spring AOP: 提供了面向切面编程的实现。
-    * Spring JDBC: Java数据库连接。
-    * Spring JMS: Java消息服务。
-    * Spring ORM: 用于支持Hibernate等ORM工具。
-    * Spring Web: 为创建Web应用程序提供支持。
-    * Spring Test: 提供第JUnit和TestNG测试的支持。
+<font color="red">这个问题看似可能很小, 但是面试官可能会从你对这些模块的了解程度上进行判断, 你在学习使用某个框架的时候是否认真的去了解这个框架, 还是只是会用而已。</font>
+
+* Spring Core: Spring核心, 可以说Spring其他所有功能都需要依赖该类库。主要提供IOC依赖注入功能。
+* Spring Aspects: 该模块与AspectJ的集成提供支持。
+* Spring AOP: 提供了面向切面编程的实现。
+* Spring JDBC: Java数据库连接。
+* Spring JMS: Java消息服务。
+* Spring ORM: 用于支持Hibernate等ORM工具。
+* Spring Web: 为创建Web应用程序提供支持。
+* Spring Test: 提供第JUnit和TestNG测试的支持。
 
 对于上面的问题, 面试官可能会用另一种方式提问, 但是我们自己在学习过程应该也会有所疑问, 那就是为什么要用Spring?
 我们就可以根据Spring常用模块的方面来进行解释了。

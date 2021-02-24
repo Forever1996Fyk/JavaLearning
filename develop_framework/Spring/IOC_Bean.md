@@ -1,4 +1,4 @@
-### Spring IOC容器
+## Spring IOC容器
 
 Spring容器是Spring Framework的核心。容器将创建对象, 把它们关联一起, 配置对象, 并管理他们的整个生命周期从创建到销毁。Spring容器视同依赖注入(DI)来管理组成一个应用程序的组件。这些对象称为Spring Beans。
 
@@ -11,7 +11,7 @@ IOC容器是具有依赖注入功能的容器, 可以创建对象, IOC容器负�
 
  可以参考这篇文章, 写的很通俗易懂[https://www.zhihu.com/question/23277575/answer/169698662](https://www.zhihu.com/question/23277575/answer/169698662)
 
-###  Spring BeanFactory容器
+###  1. Spring BeanFactory容器
 
 这个Spring中最简单, 最基础的IOC容器, 主要的功能是为依赖注入(DI)提供支持。
 
@@ -20,25 +20,33 @@ IOC容器是具有依赖注入功能的容器, 可以创建对象, IOC容器负�
 > BeanFactory的每个子接口, 以及实现类都有使用的场合, 他主要是为了区分在 Spring 内部对象的传递和转化过程中, 对对象数据访问所做的限制!!!
 
 
-### Spring ApplicationContext容器
+### 2. Spring ApplicationContext容器
+
 Application Context是BeanFactory的子接口, 也称为Spring上下文。它是Spring中较高级的容器,它能提供更多企业级的服务, 扩展了BeanFactory接口:
-    * ApplicationEventPublisher: 事件发布功能。包括容器启动事件, 关闭事件。
-    * MessageSource: 为应用提供i18国际化消息访问功能。
-    * ResourcePatternResolver: 让容器可以通过带前缀的资源文件路径装载Spring的配置文件。
-    * LifeCycle: 提供start(), stop()方法，用于控制异步处理。
+
+* ApplicationEventPublisher: 事件发布功能。包括容器启动事件, 关闭事件。
+* MessageSource: 为应用提供i18国际化消息访问功能。
+* ResourcePatternResolver: 让容器可以通过带前缀的资源文件路径装载Spring的配置文件。
+* LifeCycle: 提供start(), stop()方法，用于控制异步处理。
 
 前面提到的应用上下文的说法, 其他在很多地方都提到过, 但是很抽象(面试一般不会问这么抽象的问题, 这里只是我个人的一些理解)。
+
 > 对于Spring上下文, 我的理解是 在运行环境中对Spring执行信息的描述。比如:
+
 ```java
     public interface ApplicationContext extends ListableBeanFactory, HierarchicalBeanFactory,
 		MessageSource, ApplicationEventPublisher, ResourcePatternResolver { ... }
 ```
+
 从ApplicationContext的定义中看出继承很多接口, 所以ApplicationContext就是Spring在运行环境中对BeanFactory, MessageSource..等执行信息的描述。
 这样的话, 不仅仅是ApplicationContext, 还有Spring容器中其他的Context接口, 也是如此。
 
-### Spring Bean定义
+### 3. Spring Bean定义
+
 Spring中的容器几乎都是以Bean为基础的, 换句话说Spring是将所有组件都当做Bean来进行管理。
 Bean是一个被实例化, 组装并通过Spring IOC容器所管理的对象。
+
+我所理解的Bean: 把程序交给容器管理的业务对象, 封装成方便Spring容器操作的实例。
 
 > Bean在Spring容器中的组装流程： (一般面试官会这样问, 简述一下Bean与Spring容器的关系?)
 
@@ -47,14 +55,14 @@ Bean是一个被实例化, 组装并通过Spring IOC容器所管理的对象。
 3. 将Bean实例放入Spring容器中, 即Bean缓存池 ,
 4. 应用程序使用Bean
 
-![Bean与Spring容器的关系图](/develop_framework/Spring/img/Bean与Spring容器的关系图.jpg)
+![Bean与Spring容器的关系图](/image/Bean与Spring容器的关系图.jpg)
 
 有三种方式配置Bean提供给Spring容器
 * 基于XML的配置文件
 * 基于注解配置
 * 基于Java的配置
 
-### Spring Bean作用域(重点, 这里是面试高频提问点)
+### 4. Spring Bean作用域(重点, 这里是面试高频提问点)
 > 这是面试常问的问题, Spring中的Bean作用域有哪些?
 
 * singleton: 唯一Bean实例, Spring在每次需要时都返回同一个bean实例, Spring中的Bean默认都是单例的(这是重点, 还会有很多扩展问题, 比如: 单例Bean的线程安全问题)
@@ -115,6 +123,11 @@ Spring通过ThreadLocal类将有状态的可变成员变量(例如数据库连�
 
 
 ### Spring Bean生命周期(重点)
+
+
+这部分需要更加详细的解析, 请看[Spring Bean加载过程](develop_framework/Spring/springbean_loader.md)
+
+
 Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初始化——Bean的使用——Bean的销毁
 
 虽然表述简单, 但是这其中有很多步骤的实现。下面就是具体的Spring Bean生命周期:
@@ -124,14 +137,14 @@ Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初
 * 如果涉及到一些属性值, 利用Setter方法设置属性值。
 * 如果Bean实现了BeanNameAware接口, 调用setBeanName()方法, 传入Bean的名字。
 * 如果Bean实现了BeanClassLoaderAware接口, 调用setBeanClassLoader()方法, 传入ClassLoader对象的实例。
-* 与上面类似, 如果实现了***Aware接口, 就调用相应的方法。
+* 与上面类似, 如果实现了xxxAware接口, 就调用相应的方法。
 * 如果有和加载这个Bean的Spring容器相关的BeanPostProcessor对象, 就执行postProcessBeforeInitialization()方法。
 * 如果Bean在配置文件中定义包含`init-method`属性, 执行指定的方法。
 * 如果有和加载这个Bean的Spring容器相关的BeanPostProcessor对象, 就执行postProcessAfterInitialization()方法。
 * 当要销毁Bean的时候, 如果Bean实现了DisposableBean接口, 就执行destory()方法。
 * 当要销毁Bean的时候, 如果Bean在配置文件中定义包含`destory-method`属性, 执行指定的方法。
 
-![Spring Bean的生命周期图](/develop_framework/Spring/img/SpringBean生命周期.jpg)
+![Spring Bean的生命周期图](/image/SpringBean生命周期.jpg)
 
 如果想要学习更加细节的代码操作, 可以参考这篇文章[https://yemengying.com/2016/07/14/spring-bean-life-cycle/ ](https://yemengying.com/2016/07/14/spring-bean-life-cycle/ )
 
