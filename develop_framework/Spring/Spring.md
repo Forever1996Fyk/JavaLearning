@@ -87,9 +87,7 @@ Spring官网列出的Spring的6个特征:
 
     **创建应用组件之间关联的行为通常称为装配!!!** Spring有多种装配Bean的方式： XML, 基于Java的注解配置等等方式。
 
-    **负责对象的创建和组装的功能是由Spring应用上下文完成, Spring有多种上下文的实现, 它们的区别主要在于如何加载配置。** Spring上下文, Bean等概念会在[Spring IOC & Bean](develop_framework/Spring/IOC_Bean.md)中进行解析
-
-    IOC和DI具体的原理实现会在[Spring IOC & Bean](develop_framework/Spring/IOC_Bean.md)中进行分析。
+    **负责对象的创建和组装的功能是由Spring应用上下文完成, Spring有多种上下文的实现, 它们的区别主要在于如何加载配置。** 
 
 - **面向切面编程**
 

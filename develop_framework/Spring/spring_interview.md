@@ -46,9 +46,18 @@ Application Context是BeanFactory的子接口, 也称为Spring上下文。它是
 Spring中的容器几乎都是以Bean为基础的, 换句话说Spring是将所有组件都当做Bean来进行管理。
 Bean是一个被实例化, 组装并通过Spring IOC容器所管理的对象。
 
-我所理解的Bean: 把程序交给容器管理的业务对象, 封装成方便Spring容器操作的实例。
+**我所理解的Bean: 把程序交给容器管理的业务对象, 封装成方便Spring容器操作的实例。**
+
+- **有人可能会有疑问, 直接使用类的Class对象就可以了, 为什么还要建立Bean?**
+
+    **因为Class对象其实是无法完成Bean的抽象!!!**
+
+    **Class对象只能描述类的属性, 方法, 构造器, 可能还有继承关系的相关信息, 但是类似 <font color='red'>Bean的作用域, 注入模型(setter, 构造器), Bean是否是懒加载等信息</font>, Class是无法描述的, 所以需要一个`BeanDefinition`类来抽象这些信息, 以便Spring容器能够完整的操作实例Bean。**
 
 > Bean在Spring容器中的组装流程： (一般面试官会这样问, 简述一下Bean与Spring容器的关系?)
+
+
+这部分需要更加详细的解析, 请看[Spring Bean加载过程](develop_framework/Spring/spring_beanloader.md)
 
 1. Spring容器读取Bean的配置信息并放入Bean定义注册表中,
 2. 根据Bean注册表实例化Bean,
@@ -123,10 +132,6 @@ Spring通过ThreadLocal类将有状态的可变成员变量(例如数据库连�
 
 
 ### Spring Bean生命周期(重点)
-
-
-这部分需要更加详细的解析, 请看[Spring Bean加载过程](develop_framework/Spring/springbean_loader.md)
-
 
 Bean的生命周期可以比较简单的表达为: Bean的定义——Bean的初始化——Bean的使用——Bean的销毁
 
