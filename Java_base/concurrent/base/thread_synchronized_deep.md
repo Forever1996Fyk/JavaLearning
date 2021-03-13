@@ -15,7 +15,7 @@ Java中每一个对象都可以作为锁, 这是`synchronized`实现同步的基
 
 #### Java对象头
 
-`synchronized`用的锁时存在Java对象头里的。在Hotspod虚拟机的对象头主要包括两部分: **Mark Word(标记字段), Klass Pointer(类型指针)**。
+`synchronized`用的锁时存在Java对象头里的。在Hotspod虚拟机的对象头主要包括两部分: **Mark Word(标记字段), Klass Pointer(类型指针)。**
 
 - `Klass Point`是对象指向它的类数据的指针, 虚拟机通过这个指针来确定这个对象是哪个类的实例; 
 
