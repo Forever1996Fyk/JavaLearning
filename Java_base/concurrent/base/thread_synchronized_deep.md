@@ -78,16 +78,16 @@ Monitor是线程私有的数据结构, 每一个线程都有一个可用的monit
 
  比如: StringBuffer的append()方法, Vector的add()方法:
 
-    ```java
-    public void vectorTest(){
-        StringBuffer<String> sb = new StringBuffer();
-        for(int i = 0 ; i < 10 ; i++){
-            sb.append(i + ":");
-        }
-
-        System.out.println(sb.toString());
+```java
+public void vectorTest(){
+    StringBuffer<String> sb = new StringBuffer();
+    for(int i = 0 ; i < 10 ; i++){
+        sb.append(i + ":");
     }
-    ```
+
+    System.out.println(sb.toString());
+}
+```
 
 在上面的代码中, 并不存在线程竞争问题, JVM就会将StringBuffer内部的加锁操作消除。
 
