@@ -95,6 +95,7 @@
             * [Spring IOC原理解析](develop_framework/Spring/spring_ioc.md)
             * [Spring Bean加载解析](develop_framework/Spring/spring_beanloader.md)
             * [Spring IOC从单例缓存中获取单例bean](develop_framework/Spring/spring_beansingleton.md)
+            * [Spring Bean的生命周期](develop_framework/Spring/Spring_Bean_LifeCycle.md)
             * [Spring AOP](develop_framework/Spring/Spring_AOP.md)
             * [Spring 事务](develop_framework/Spring/Spring_Transaction.md)
             * [Spring 设计模式](develop_framework/Spring/Spring_DesignModel.md)

@@ -12,7 +12,7 @@ Spring IOC容器的作用是, 以某种方式加载配置资源信息, 将其解
 
 我们知道, Bean的加载其实是发生在, 第一次程序获取Bean的过程中, 才真正的加载Bean。所以我们需要了解其中的源码。
 
-在`AbstractApplicationContent.getBean(String name)`方法中:
+在`AbstractApplicationContext.getBean(String name)`方法中:
 
 ```java
 

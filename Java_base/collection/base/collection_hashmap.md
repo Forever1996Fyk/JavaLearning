@@ -239,7 +239,7 @@ return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 `HashMap`中的hash算法是:
 
 ```java
-hashcode & (length - 1)
+hash & (length - 1)
 ```
 
 其中length就是数组长度, hash就是插入值的hash值, 如果length=2^n的话, 那么length-1 = 2^n-1。
@@ -361,7 +361,7 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 
 7. 在第6步时, 遍历链表插入新的元素时 比较每一个元素, 判断新元素key是否存在, 如果存在就直接覆盖value, 否则就插入链尾; 如果此时链表长度较长达到了8, 那就将整个链表进行树化;
 
-8. 插入元素成功后, `HashMap`的容量size+1, 如果此时的size大于**`capacity*loadFactor`**, 那么就需要扩容, 再次调用`resize()`方法。
+8. 插入元素成功后, `HashMap`的容量size+1, 如果此时的size大于 **`capacity*loadFactor`**, 那么就需要扩容, 再次调用`resize()`方法。
 
 ![collection_hashmap_put](/image/collection_hashmap_put.png)
 
