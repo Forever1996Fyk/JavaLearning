@@ -1,4 +1,4 @@
-## <center>Spring Transaction</center>
+## Spring Transaction
 
 在日常开发中, 只要涉及到业务逻辑的开发都一定要去深入理解事务, 这不仅是面试高频提问点, 也是实际开发中必备技能。所以很重要!!!
 
@@ -15,7 +15,7 @@
 
 ### 2. 事务的特性(ACID)了解吗?
 
-![事务特性](/develop_framework/Spring/img/事务特性.png)
+![事务特性](/image/spring_transaction_characteristic.png)
 - **原子性**: 事务是最小的执行单位, 不允许在分割。事务的原子性确保动作要么全部完成, 要么完全不起作用。
 - **一致性**: 执行事务前后, 数据保持一致。
 - **隔离性**: 并发访问数据库时, 一个事务的执行不应影响其他事务的执行。

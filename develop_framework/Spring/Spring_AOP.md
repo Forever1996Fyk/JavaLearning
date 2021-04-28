@@ -1,4 +1,4 @@
-## <center>Spring AOP</center>
+## Spring AOP
 
 Spring AOP(Aspect-Oriented Programming)面向切面编程, 是Spring极为重要的特性之一, 在实际的开发中也经常会用到, 也是面试提问高频知识点。
 
@@ -109,12 +109,12 @@ public class Demo {
     (在上面代码中"打开事务", "关闭事务"的代码就是 `增强/通知`)
 
 - **织入(Weaving)**:
-    将`增强/通知`添加到目标对象的过程。
+    将`增强/通知`添加到目标对象的过程。 比如Spring AOP的织入就是在Bean的生命周期中, 利用`BeanPostProcessor`接口,完成代理对象的注入
 
 - **引入/引介(Introduction)**:
     允许添加新方法或属性到现有的类中。
 
-- ***切面(Aspect)**:
+- **切面(Aspect)**:
     `切点`和`增强/通知`共同组成一个切面。现在由于Spring Boot大热, 注解开发也是火热。Spring AOP也有注解开发。所以使用`@Aspect`注解的类就是切面
 
 
@@ -141,6 +141,9 @@ public class Demo {
 Spring AOP集成了AspectJ, 而AspectJ比Spring AOP功能更加强大, 但是Spring AOP更加简单。
 
 如果切面比较少, 两者性能差异不大。但是, 当切面太多的话, 最好选择AspectJ, 因为AspectJ 比 Spring AOP效率更高。
+
+
+
 
 
 

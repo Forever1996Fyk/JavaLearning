@@ -92,7 +92,7 @@ InstantiationAwareBeanPostProcessor extends BeanPostProcessor
 
 ![bean_life_cycle1](/image/bean_life_cycle1.webp)
 
-##### InstantiationAwareBeanPostProcessor源码分析
+##### 2.1.1 InstantiationAwareBeanPostProcessor源码分析
 
 - `postProcessBeforeInstantiation`调用点:
 
@@ -164,6 +164,12 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable B
 
 而且`InstantiationAwareBeanPostProcessor`重写了`postProcessBeforeInstantiation`接口, 会返回一个boolean类型, 如果返回false可以阻断属性赋值阶段, 也就说, 如果执行`postProcessBeforeInstantiation`错误, 就不会有下面的操作了。
 
+##### 2.1.2 BeanPostProcessor源码分析
+
+后面会有专门文章介绍`BeanPostProcessor`接口, 这是非常重要的接口!!!
+
+[BeanPostProcessor接口源码分析](develop_framework/Spring/Spring_BeanPostProcessor.md)
+
 #### 2.2 只调用一次的接口
 
 这一类的接口特点就是功能丰富, 常用语用于自定义扩展。比如:
@@ -231,3 +237,60 @@ private void invokeAwareMethods(String beanName, Object bean) {
 
 ##### 2.2.2 简单的两个生命周期接口
 
+Spring也提供了在Bean初始化阶段和销毁阶段的可扩展点:
+
+1. `InitializingBean`对应生命周期的初始化阶段, 在`invokeInitMethods`方法中调用
+
+    ```java
+    protected void invokeInitMethods(String beanName, Object bean, @Nullable RootBeanDefinition mbd)
+			throws Throwable {
+
+		boolean isInitializingBean = (bean instanceof InitializingBean);
+		if (isInitializingBean && (mbd == null || !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Invoking afterPropertiesSet() on bean with name '" + beanName + "'");
+			}
+			if (System.getSecurityManager() != null) {
+				try {
+					AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
+						((InitializingBean) bean).afterPropertiesSet();
+						return null;
+					}, getAccessControlContext());
+				}
+				catch (PrivilegedActionException pae) {
+					throw pae.getException();
+				}
+			}
+			else {
+				((InitializingBean) bean).afterPropertiesSet();
+			}
+		}
+    ```
+
+2. `DisposableBean`类似于InitializingBean，对应生命周期的销毁阶段。在`ConfigurableApplicationContext#close()`方法作为入口，实现是通过循环取所有实现了DisposableBean接口的Bean然后调用其destroy()方法。
+
+### 3. Bean的生命周期总结
+
+根据上面的分析, 我们就可以很简单的总结出Bean的生命周期, 不要死记硬背。只需要记住4个主要的步骤, 然后记住扩展点的执行时机即可。
+
+Bean的完整生命周期为:
+
+1. 实例化前, 判断是否实现了`InstantiationAwareBeanPostProcessor`, 如果实现, 就执行它的postProcessBeforeInstantiation方法;
+
+2. **根据构造方法开始Bean的实例化注入;**
+
+3. 实例化后, 在属性赋值前, 判断是否实现了`InstantiationAwareBeanPostProcessor`, 如果实现, 就执行它的postProcessAfterInstantiation方法;
+
+4. **根据setter进行Bean的属性赋值注入;**
+
+5. Bean初始化前, 执行所有实现Aware接口的bean;
+
+6. Bean初始化前, 执行所有的实现`BeanPostProcessor`接口的 `postProcessBeforeInitialization`方法;
+
+7. 在初始化流程中, 判断Bean是否实现了`InitializingBean`, 如果实现了, 就执行`afterPropertiesSet`方法;
+
+8. **正式开始初始化Bean;**
+
+9. Bean初始化结束,  执行所有的实现`BeanPostProcessor`接口的 `postProcessAfterInitialization`方法;
+
+10. 当容器关闭时, 判断Bean是否实现`DisposableBean`接口, 如果实现就执行`destroy()`方法;
