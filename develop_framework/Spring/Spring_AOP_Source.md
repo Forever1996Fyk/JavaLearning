@@ -71,7 +71,7 @@ public abstract class AopConfigUtils {
 
 - AnnotationAwareAspectJAutoProxyCreator: 注解AOP的实现方式;
 
-这三个类都继承了AbstractAutoProxyCreator, 而这个类实现了`InstantiationAwareBeanPostProcessor`接口, 所以这三个类都可以作为我们分析AOP源码的入口。
+这三个类都继承了AbstractAutoProxyCreator, 而这个类实现了`BeanPostProcessor`接口, 所以这三个类都可以作为我们分析AOP源码的入口。
 
 我们这里只解析`AnnotationAwareAspectJAutoProxyCreator`源码, 也是平时我们开发比较常用的方式。 利用`@AspectJ`作为切面的AOP方式。
 
@@ -230,23 +230,25 @@ public Object getProxy(@Nullable ClassLoader classLoader) {
 
 ### 4. 总结
 
-至此, 我们把Spring AOP的执行流程总结一下, 应该还是比较清晰的。
+至此,我们应该知道Spring AOP生成代理对象的时机, 是在Bean初始化结束后, 调用`BeanPostProcessor`的`postProcessAfterInitialization`方法, 最终返回代理对象。
 
-当Spring启动时, 开始构建Bean; 
+当Spring开始初始化Bean的`initializeBean`方法后, 会调用`applyBeanPostProcessorsAfterInitialization`方法,
 
-1. 在Bean实例化之前, 执行所有实现`InstantiationAwareBeanPostProcessor`接口的类的`postProcessBeforeInitialization`方法, 
+```java
+@Override
+public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
+        throws BeansException {
 
-2. AOP就会执行`AbstractAutoProxyCreator`的`postProcessBeforeInitialization`方法, 判断Bean是否实现了TargetSource接口, 如果实现, 则生成代理类;
+    Object result = existingBean;
+    for (BeanPostProcessor processor : getBeanPostProcessors()) {
+        Object current = processor.postProcessAfterInitialization(result, beanName);
+        if (current == null) {
+            return result;
+        }
+        result = current;
+    }
+    return result;
+}
+```
 
-3. Bean实例化结束;
-
-4. 在属性赋值之前, 执行所有实现`InstantiationAwareBeanPostProcessor`的`postProcessAfterInitialization`;
-
-5. AOP就会执行`AbstractAutoProxyCreator`的`postProcessAfterInitialization`方法, 从而创建带有切面注解的Bean的代理对象, 然后返回;
-
-6. 在后面Bean的生命周期中, 包括属性赋值, 初始化Bean, 都是代理对象。
-
-
-
-
-
+如果我们debug会发现, 其中一个BeanPostProcessor的实现类就是`AnnotationAwareAspectJAutoProxyCreator`, 最终它会调用到父类的`wrapIfNecessary`方法, 从而生成代理类, 返回。

@@ -99,6 +99,7 @@
             * [Spring BeanPostProcessor源码分析](develop_framework/Spring/Spring_BeanPostProcessor.md)
             * [Spring AOP原理](develop_framework/Spring/Spring_AOP.md)
             * [Spring AOP源码解析](develop_framework/Spring/Spring_AOP_Source.md)
+            * [Spring 循环依赖](develop_framework/Spring/Spring_Circular_Dependency.md)
             * [Spring 事务](develop_framework/Spring/Spring_Transaction.md)
             * [Spring 事务源码解析](develop_framework/Spring/Spring_Transaction_Source.md)
             * [Spring 设计模式](develop_framework/Spring/Spring_DesignModel.md)
