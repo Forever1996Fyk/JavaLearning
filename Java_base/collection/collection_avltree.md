@@ -4,11 +4,11 @@
 
 ### 1. AVL定义
 
-`平衡二叉树(Self-Balancing Binary Search Tree或Height-Banlanced Binary Search Tree)`是一种二叉排序树, 其中每一个节点的左子树和右子树高度最多为1。
+`平衡二叉树(Self-Balancing Binary Search Tree或Height-Banlanced Binary Search Tree)`是一种二叉排序树, 其中每一个节点的左子树和右子树高度差最多为1。
 
 它是一种高度平衡的二叉排序树。也就是说, 要么它是一颗空树, 要么它的左子树和右子树都是平衡二叉树, 并且左子树和右子树的深度之差的绝对值不超过1。
 
-二叉树上节点的左子树深度减去右子树深度的值称为**平衡因子BF(Balance Factor),**那么平衡二叉树上所有节点的平衡因子只可能是-1,0,1。
+二叉树上节点的左子树深度减去右子树深度的值称为 **平衡因子BF(Balance Factor)** ,那么平衡二叉树上所有节点的平衡因子只可能是-1,0,1。
 
 ![noavl](/image/noavl.png)
 
