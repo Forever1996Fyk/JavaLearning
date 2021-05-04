@@ -114,7 +114,7 @@ Spring中默认的事件都是继承并实现`ApplicationEvent`类:
 - `ContetRefreshedEvent`: `ApplicationContext`初始化或刷新完成后触发的事件。
 - `ContextCloseEvent`: `ApplicationContext`关闭后触发的事件。
 
-![ApplicationEvent抽象UML图](/develop_framework/Spring/img/ApplicationEvent抽象UML.png)
+![ApplicationEvent抽象UML图](/image/ApplicationEvent抽象UML.png)
 
 ##### 事件监听者角色
 
