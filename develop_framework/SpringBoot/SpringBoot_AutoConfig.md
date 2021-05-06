@@ -66,7 +66,7 @@ public @interface SpringBootConfiguration {
 
     **META-INF/spring.factories**配置文件就是所有需要自动配置类的全类名列表, 这些类名以逗号分割, 以xxxAutoConfiguration形式命名。如下图:
 
-    ![spring.factories](/develop_framework/SpringBoot/img/spring_factories.png)
+    ![spring.factories](/image/spring_factories.png)
 
 - 对于这些自动配置类XxxxAutoConfiguration都是在某些条件下才会生效, 这些条件也是以`@Conditional`注解的形式体现。
 
@@ -128,4 +128,4 @@ public @interface SpringBootConfiguration {
 
 **<font color="red">Spring Boot启动时, 通过`@EnableAutoConfiguration`注解找到并加载`META-INFO/spring.factories`配置文件中的所有自动配置类, 这些自动配置类可以通过Properties属性类获取在全局配置文件中配置的属性。比如server.port, 而这些Properties属性类是通过`@ConfigurationProperties`注解与全局配置文件中对应的属性进行绑定。</font>**
 
-![SpringBoot自动配置流程图](/develop_framework/SpringBoot/img/SpringBootAutoConfig流程图.png)
+![SpringBoot自动配置流程图](/image/SpringBootAutoConfig流程图.png)

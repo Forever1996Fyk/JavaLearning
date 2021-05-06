@@ -6,7 +6,7 @@ SpringBoot应该是近几年非常大热的技术, 基本上是面试必问点�
 
 我们知道学习Spring Framework是为了简化J2EE企业应用程序的开发, 而Spring Boot Framework是为了简化Spring的开发。
 
-![为什么需要使用SpringBoot](/develop_framework/Spring/img/为什么需要使用SpringBoot.png)
+![为什么需要使用SpringBoot](/image/为什么需要使用SpringBoot.png)
 
 ### Spring Boot有哪些优势?
 
