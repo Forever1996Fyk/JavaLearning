@@ -15,7 +15,7 @@ Java中每一个对象都可以作为锁, 这是`synchronized`实现同步的基
 
 #### Java对象头
 
-`synchronized`用的锁时存在Java对象头里的。在Hotspod虚拟机的对象头主要包括两部分:**Mark Word(标记字段), Klass Pointer(类型指针)。**
+`synchronized`用的锁时存在Java对象头里的。在Hotspod虚拟机的对象头主要包括两部分: **Mark Word(标记字段), Klass Pointer(类型指针)。**
 
 - `Klass Point`是对象指向它的类数据的指针, 虚拟机通过这个指针来确定这个对象是哪个类的实例; 
 
@@ -78,16 +78,16 @@ Monitor是线程私有的数据结构, 每一个线程都有一个可用的monit
 
  比如: StringBuffer的append()方法, Vector的add()方法:
 
-    ```java
-    public void vectorTest(){
-        StringBuffer<String> sb = new StringBuffer();
-        for(int i = 0 ; i < 10 ; i++){
-            sb.append(i + ":");
-        }
-
-        System.out.println(sb.toString());
+```java
+public void vectorTest(){
+    StringBuffer<String> sb = new StringBuffer();
+    for(int i = 0 ; i < 10 ; i++){
+        sb.append(i + ":");
     }
-    ```
+
+    System.out.println(sb.toString());
+}
+```
 
 在上面的代码中, 并不存在线程竞争问题, JVM就会将StringBuffer内部的加锁操作消除。
 

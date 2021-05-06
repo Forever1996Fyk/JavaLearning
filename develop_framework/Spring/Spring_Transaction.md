@@ -74,7 +74,7 @@ Spring并不直接管理事务, 而是提供了多种事务管理器。即`Platf
 
 `PlatformTransactionManager`通过`getTransaction(@Nullable TransactionDefinition var1)`方法来获取事务, 其中`TransactionDefinition`类, 定义一些基本的**事务属性**。
 
-![事务属性](/develop_framework/Spring/img/事务属性.png)
+![事务属性](/image/事务属性.png)
 
 
 

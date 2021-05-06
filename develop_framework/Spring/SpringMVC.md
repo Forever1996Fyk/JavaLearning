@@ -1,4 +1,4 @@
-## <center>Spring MVC工作原理详解 </center>
+## Spring MVC工作基本原理
 
 如果用到Spring, 那就不得不提Spring MVC。这两个框架是我们开发学习路程中必不可少的, 即使现在SpringBoot大火, 但仍然是在这两个框架的基础上进行开发的。之前我们已经学习了Spring的核心知识, 所以学习SpringMVC也是紧接着Spring框架。
 
@@ -47,7 +47,7 @@ SpringMVC框架是以请求为驱动, 围绕着Servlet设计, 将请求发给控
 
 SpringMVC的核心是`DispatcherServlet`前端控制器。具体的流程如下:
 
-![SpringMVC请求流程原理图](/develop_framework/Spring/img/SpringMVC请求流程原理图.png)
+![SpringMVC请求流程原理图](/image/SpringMVC请求流程原理图.png)
 
 (1) `DispatcherServlet`接收客户端的请求, 根据请求信息调用处理映射器`HandlerMapping`, 解析并返回对应的Handler处理器;
 
@@ -73,118 +73,13 @@ SpringMVC的核心是`DispatcherServlet`前端控制器。具体的流程如下:
 
 对源码的解析也许在面试中并不需要, 但是在学习过程中是必须要知道的。
 
-```java
-package org.springframework.web.servlet;
-
-@SuppressWarnings("serial")
-public class DispatcherServlet extends FrameworkServlet {
-
-    public static final String MULTIPART_RESOLVER_BEAN_NAME = "multipartResolver";
-    public static final String LOCALE_RESOLVER_BEAN_NAME = "localeResolver";
-    public static final String THEME_RESOLVER_BEAN_NAME = "themeResolver";
-    public static final String HANDLER_MAPPING_BEAN_NAME = "handlerMapping";
-    public static final String HANDLER_ADAPTER_BEAN_NAME = "handlerAdapter";
-    public static final String HANDLER_EXCEPTION_RESOLVER_BEAN_NAME = "handlerExceptionResolver";
-    public static final String REQUEST_TO_VIEW_NAME_TRANSLATOR_BEAN_NAME = "viewNameTranslator";
-    public static final String VIEW_RESOLVER_BEAN_NAME = "viewResolver";
-    public static final String FLASH_MAP_MANAGER_BEAN_NAME = "flashMapManager";
-    public static final String WEB_APPLICATION_CONTEXT_ATTRIBUTE = DispatcherServlet.class.getName() + ".CONTEXT";
-    public static final String LOCALE_RESOLVER_ATTRIBUTE = DispatcherServlet.class.getName() + ".LOCALE_RESOLVER";
-    public static final String THEME_RESOLVER_ATTRIBUTE = DispatcherServlet.class.getName() + ".THEME_RESOLVER";
-    public static final String THEME_SOURCE_ATTRIBUTE = DispatcherServlet.class.getName() + ".THEME_SOURCE";
-    public static final String INPUT_FLASH_MAP_ATTRIBUTE = DispatcherServlet.class.getName() + ".INPUT_FLASH_MAP";
-    public static final String OUTPUT_FLASH_MAP_ATTRIBUTE = DispatcherServlet.class.getName() + ".OUTPUT_FLASH_MAP";
-    public static final String FLASH_MAP_MANAGER_ATTRIBUTE = DispatcherServlet.class.getName() + ".FLASH_MAP_MANAGER";
-    public static final String EXCEPTION_ATTRIBUTE = DispatcherServlet.class.getName() + ".EXCEPTION";
-    public static final String PAGE_NOT_FOUND_LOG_CATEGORY = "org.springframework.web.servlet.PageNotFound";
-    private static final String DEFAULT_STRATEGIES_PATH = "DispatcherServlet.properties";
-    protected static final Log pageNotFoundLogger = LogFactory.getLog(PAGE_NOT_FOUND_LOG_CATEGORY);
-    private static final Properties defaultStrategies;
-    static {
-        try {
-            ClassPathResource resource = new ClassPathResource(DEFAULT_STRATEGIES_PATH, DispatcherServlet.class);
-            defaultStrategies = PropertiesLoaderUtils.loadProperties(resource);
-        }
-        catch (IOException ex) {
-            throw new IllegalStateException("Could not load 'DispatcherServlet.properties': " + ex.getMessage());
-        }
-    }
-
-    /** Detect all HandlerMappings or just expect "handlerMapping" bean? */
-    private boolean detectAllHandlerMappings = true;
-
-    /** Detect all HandlerAdapters or just expect "handlerAdapter" bean? */
-    private boolean detectAllHandlerAdapters = true;
-
-    /** Detect all HandlerExceptionResolvers or just expect "handlerExceptionResolver" bean? */
-    private boolean detectAllHandlerExceptionResolvers = true;
-
-    /** Detect all ViewResolvers or just expect "viewResolver" bean? */
-    private boolean detectAllViewResolvers = true;
-
-    /** Throw a NoHandlerFoundException if no Handler was found to process this request? **/
-    private boolean throwExceptionIfNoHandlerFound = false;
-
-    /** Perform cleanup of request attributes after include request? */
-    private boolean cleanupAfterInclude = true;
-
-    /** MultipartResolver used by this servlet */
-    private MultipartResolver multipartResolver;
-
-    /** LocaleResolver used by this servlet */
-    private LocaleResolver localeResolver;
-
-    /** ThemeResolver used by this servlet */
-    private ThemeResolver themeResolver;
-
-    /** List of HandlerMappings used by this servlet */
-    private List<HandlerMapping> handlerMappings;
-
-    /** List of HandlerAdapters used by this servlet */
-    private List<HandlerAdapter> handlerAdapters;
-
-    /** List of HandlerExceptionResolvers used by this servlet */
-    private List<HandlerExceptionResolver> handlerExceptionResolvers;
-
-    /** RequestToViewNameTranslator used by this servlet */
-    private RequestToViewNameTranslator viewNameTranslator;
-
-    private FlashMapManager flashMapManager;
-
-    /** List of ViewResolvers used by this servlet */
-    private List<ViewResolver> viewResolvers;
-
-    public DispatcherServlet() {
-        super();
-    }
-
-    public DispatcherServlet(WebApplicationContext webApplicationContext) {
-        super(webApplicationContext);
-    }
-    @Override
-    protected void onRefresh(ApplicationContext context) {
-        initStrategies(context);
-    }
-
-    protected void initStrategies(ApplicationContext context) {
-        initMultipartResolver(context);
-        initLocaleResolver(context);
-        initThemeResolver(context);
-        initHandlerMappings(context);
-        initHandlerAdapters(context);
-        initHandlerExceptionResolvers(context);
-        initRequestToViewNameTranslator(context);
-        initViewResolvers(context);
-        initFlashMapManager(context);
-    }
-}
-```
 上面是`DispatcherServlet`的源码, 其中比较重要的属性Beans:
-    - `HandlerMapping`: 用于handlers映射请求和一系列对于拦截器的处理。大部分都用`@Controller`注解。
-    - `HandlerApapter`: 帮助`DispatcherServlet`处理映射请求处理器`Handler`的适配器。一般我们是不需要考虑这部分。
-    - `ViewResolver`: 根据实际配置解析实际的视图`View`类型。
-    - `ThemeResolver`: 解决Web应用程序的主题, 比如提供个性化布局。
-    - `MultipartResolver`: 解析多部分请求, 用来支持从HTML表单上传的文件。
+
+- `HandlerMapping`: 用于handlers映射请求和一系列对于拦截器的处理。大部分都用`@Controller`注解。
+- `HandlerApapter`: 帮助`DispatcherServlet`处理映射请求处理器`Handler`的适配器。一般我们是不需要考虑这部分。
+- `ViewResolver`: 根据实际配置解析实际的视图`View`类型。
+- `ThemeResolver`: 解决Web应用程序的主题, 比如提供个性化布局。
+- `MultipartResolver`: 解析多部分请求, 用来支持从HTML表单上传的文件。
 
 在Web MVC框架中, 每个`DispatcherServlet`都有自己的`WebApplicationContext`, 它继承了`ApplicationContext`。所以`WebApplicationContext`包含其上下文和Servlet实例之间共享的所有基础框架的`Beans`信息。
 
@@ -194,7 +89,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 HandlerMapping接口处理请求的映射实现类:
     - `SimpleUrlHandlerMapping`类通过配置文件把Url映射到Controller类中。
-    - `DefaultAnnotationMapping`类通过注解吧Url映射到Controller类中。
+    - `DefaultAnnotationMapping`类通过注解把Url映射到Controller类中。
 
 - **处理适配器`HandlerAdapter`**
 
