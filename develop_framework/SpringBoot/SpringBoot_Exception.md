@@ -1,4 +1,4 @@
-## <center>Spring Boot 异常处理</center>
+## Spring Boot 异常处理
 
 > 如何处理全局异常?
 

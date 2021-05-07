@@ -1,4 +1,4 @@
-## <center>Dubbo深入学习</center>
+## Dubbo深入学习
 
 SOA分布式架构的流行, 是Dubbo诞生的关键。SOA面向服务的架构(Service Oriented Architecture), 就是把项目按照业务逻辑拆分为服务层, 表现层两个工程。服务层包含业务逻辑, 只要对外提供服务即可。表现层只需要处理和页面的交互, 业务逻辑都是调用服务层的服务来实现。SOA架构主要两个角色: 服务提供者(Provider)和服务使用者(Consumer)。
 
@@ -13,7 +13,7 @@ Dubbo也可以运用在微服务系统中, 只不过由于Spring Cloud在微服�
 
 ### 2. Dubbo架构
 
-![Dubbo架构图](/distributed/RPC/img/Dubbo架构图.jpg)
+![Dubbo架构图](/image/Dubbo架构图.jpg)
 
 调用关系:
 

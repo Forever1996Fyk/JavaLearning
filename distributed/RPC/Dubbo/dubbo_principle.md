@@ -1,4 +1,4 @@
-## <center>Dubbo原理解析</center>
+## Dubbo原理解析
 
 ### 1. Dubbo框架设计
 
@@ -28,5 +28,9 @@ Java也有SPI机制, 可以做到服务发现和动态扩展, 但是弊端就是
 [Dubbo_Service_Exposed](/distributed/RPC/Dubbo/dubbo_service_exposed.md)
 
 ### 4. Dubbo服务引用
+
+[Dubbo_Service_Reference](/distributed/RPC/Dubbo/dubbo_service_reference.md)
+
+### 5. Dubbo服务调用
 
 [Dubbo_Service_Reference](/distributed/RPC/Dubbo/dubbo_service_reference.md)

@@ -535,7 +535,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 
 上面的是SpringMVC中最核心的`DispatcherServlet`的原理, 其实看完之后, 也就明白了为什么说`DispatcherServlet`是SpringMVC的核心处理器。
 
-看完这篇文章, 再回到之前[SpringMVC基本工作原理](develop_framework/Spring/SpringMVC.md)这篇文章, 对于SpringMVC执行流程应该会有一个更加深刻的认识。
+看完这篇文章, 再回到之前[SpringMVC基本工作原理](develop_framework/Spring/Spring_MVC.md)这篇文章, 对于SpringMVC执行流程应该会有一个更加深刻的认识。
 
 
 

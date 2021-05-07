@@ -1,4 +1,4 @@
-## <center>SqlSession相关原理</center>
+## SqlSession相关原理
 
 MyBatis一切的基础都从SqlSession和SqlSessionFactory接口开始。
 

@@ -1,6 +1,6 @@
-## <center>Spring Boot Interceptor学习</center>
+## Spring Boot Interceptor学习
 
-**拦截器(Interceptor)**与Filter过滤器一样,它们都是面向切面编程。
+**拦截器(Interceptor)** 与Filter过滤器一样,它们都是面向切面编程。
 
 ### 1. 过滤器和拦截器的区别
 
@@ -43,7 +43,7 @@ public void afterCompletion(HttpServletRequest request,
 
 其中: `preHandle`方法返回true或false。如果返回true, 那么请求将继续到达Controller被处理。
 
-![interceptor](/develop_framework/SpringBoot/img/interceptor.png)
+![interceptor](/image/interceptor.png)
 
 `LogInterceptor`用于拦截请求, 打印日志:
 
@@ -174,9 +174,9 @@ public class AdminInterceptor extends HandlerInterceptorAdapter {
 }
 ```
 
-![new-old-LoginInterceptor](/develop_framework/SpringBoot/img/new-old-LoginInterceptor.png)
+![new-old-LoginInterceptor](/image/new-old-LoginInterceptor.png)
 
-![new-old-LoginInterceptor2](/develop_framework/SpringBoot/img/new-old-LoginInterceptor2.png)
+![new-old-LoginInterceptor2](/image/new-old-LoginInterceptor2.png)
 
 **配置拦截器**:
 

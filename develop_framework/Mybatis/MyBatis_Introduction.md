@@ -1,10 +1,10 @@
-## <center>Mybatis 整体简介</center>
+## Mybatis 整体简介
 
 ### 1. MyBatis整体架构
 
 MyBatis整体可为三层: 基础支持层, 核心处理层, 接口层
 
-![Mybatis_Structure](/develop_framework/Mybatis/img/Mybatis_Structure.png)
+![Mybatis_Structure](/image/Mybatis_Structure.png)
 
 ### 2. MyBatis SQL执行流程
 
@@ -14,7 +14,7 @@ SQL语句的执行会涉及到各个组件, 其中最重要的是`Executor`, `St
 `StatementHandler`首先通过`ParmameterHandler`完成SQL的实参绑定, 然后通过`java.sql.Statement`对象执行SQL语句并得到结果集`ResultSet`, 最后通过
 `ResultSetHandler`完成结果集的映射, 得到对象并返回。
 
-![Mybatis_Process](/develop_framework/Mybatis/img/Mybatis_Process.png)
+![Mybatis_Process](/image/Mybatis_Process.png)
 
 ### 3. MyBatis相关连接
 

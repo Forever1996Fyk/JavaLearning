@@ -1,4 +1,4 @@
-## <center>MyBatis 面试题集锦</center>
+## MyBatis 面试题集锦
 
 ### 1. #{}和${}的区别是什么?
 

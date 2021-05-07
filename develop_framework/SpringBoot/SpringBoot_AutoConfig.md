@@ -129,3 +129,19 @@ public @interface SpringBootConfiguration {
 **<font color="red">Spring Boot启动时, 通过`@EnableAutoConfiguration`注解找到并加载`META-INFO/spring.factories`配置文件中的所有自动配置类, 这些自动配置类可以通过Properties属性类获取在全局配置文件中配置的属性。比如server.port, 而这些Properties属性类是通过`@ConfigurationProperties`注解与全局配置文件中对应的属性进行绑定。</font>**
 
 ![SpringBoot自动配置流程图](/image/SpringBootAutoConfig流程图.png)
+
+### 3. 自动配置的核心原理
+
+根据上面我们对自动配置的原理解析, 我们可以得到下面几个结论:
+
+1. SpringBoot先加载所有的自动配置类(根据META-INFO/spring.factories文件下), xxxAutoConfiguration
+
+2. 每个自动配置类按条件进行生效(`@Conditional`, `@ConditionalOnMissingBean`...), 而且一般默认都会通过`@EnableConfigurationProperties`绑定配置文件指定的值, xxxProperties;
+
+3. 生效的配置类就会给容器中装配组件;
+
+4. 定制化配置
+
+    - 用户直接使用@Bean替换底层的组件;
+    
+    - 用户根据底层的配置类绑定了那些配置文件, 然后直接覆盖原来的配置文件;

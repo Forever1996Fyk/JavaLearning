@@ -1,4 +1,4 @@
-## <center>Mybatis原理分析</center>
+## Mybatis原理分析
 
 Mybatis是一种ORM框架, ORM是对象关系映射, 将JavaBean和数据库对象进行相互的转换。
 - Mybatis支持自定义SQL查询, 存储过程和高级映射的持久层框架, 去除了几乎所有JDBC代码和参数的手动设置以及结果集的检索。

@@ -1,4 +1,4 @@
-## <center>ZooKeeper 基础</center>
+## ZooKeeper 基础
 
 **ZooKeeper为我们提供了高可用, 高性能, 稳定的分布式数据一致性解决方案, 通常被用于实现数据发布/订阅, 负载均衡, 命名服务, 分布式协调/通知, 集群管理, Master选举, 分布式锁, 分布式队列等功能。**
 
@@ -33,7 +33,7 @@ ZooKeeper数据模型采用层次化的多叉树结构, 每个节点上可以存
 
 **这里要注意的是: ZooKeeper主要是用来协调服务的, 而不是用来存储业务数据的, 所以znode是无法存储比较大的数据。ZooKeeper给出的上限是每个节点的数据大小最大是1M。**
 
-![zookeeper_znode](/distributed/RPC/img/zookeeper_znode.png)
+![zookeeper_znode](/image/zookeeper_znode.png)
 
 
 #### 4.2 znode(数据节点)
@@ -95,7 +95,7 @@ ZooKeeper采用ACL(AccessControllLists)策略来进行权限控制, 类似于UNI
 
 `Wathcer(事件监听器)`是ZooKeeper中非常重要的特性。ZooKeeper允许用户在指定节点上注册Watcher, 并且在某些事件触发时, ZooKeeper服务端会将事件通知到对应的客户端上。
 
-![zookeeper_watcher](/distributed/RPC/img/zookeeper_watcher.png)
+![zookeeper_watcher](/image/zookeeper_watcher.png)
 
 #### 4.4 会话(Session)
 
@@ -115,7 +115,7 @@ Session有一个属性是: `sessionTimeout`, 该属性表示会话超时时间�
 
 ZooKeeper不是传统的Master/Slave概念, 而是引入Leader, Follower和Observer三种角色。
 
-![zookeeper_cluster](/distributed/RPC/img/zookeeper_cluster.png)
+![zookeeper_cluster](/image/zookeeper_cluster.png)
 
 ZooKeeper集群中的所有机器通过一个**Leader选举过程**来选定一台称为"Leader"的机器, Leader既可以为客户端提供写服务又能提供读服务。Follower和Observer都只能提供读服务。Follower和Observer唯一的区别在于Observer机器不参与Leader的选举过程, 也不参与写操作的"过半写成功"策略。因此Observer机器可以在不影响写性能的情况下提升集群的读性能。
 

@@ -1,4 +1,4 @@
-## <center>Spring Boot Filter学习</center>
+## Spring Boot Filter学习
 
 `Filter`这个概念应该是很熟悉的东西, 特别是在学习Servlet的时候, 就知道了对请求的过滤。
 
@@ -31,11 +31,11 @@ public interface Filter {
 `Filter`接口有一个`doFilter`方法, 这个方法实现了对用户请求的过滤。流程如下:
 
 1. 用户发送请求到web服务器, 请求会先到过滤器;
-2. 过滤器会对请求00进行一些处理。比如过滤请求的参数, 修改返回给客户端的response的内容, 判断是否该用户是否有权限访问该接口;
+2. 过滤器会对请求进行一些处理。比如过滤请求的参数, 修改返回给客户端的response的内容, 判断是否该用户是否有权限访问该接口;
 3. 用户请求响应结束;
 4. 进行自己的其他操作。
 
-![SpringBoot_filter](/develop_framework/SpringBoot/img/filter.png)
+![SpringBoot_filter](/image/filter.png)
 
 ### 2. 自定义Filter
 

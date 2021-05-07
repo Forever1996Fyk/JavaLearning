@@ -1,4 +1,4 @@
-## <center>Spring Boot 异步编程</center>
+## Spring Boot 异步编程
 
 这里简单的通过代码介绍一下SpringBoot的异步编程。
 
@@ -31,7 +31,7 @@ public interface TaskExecutor extends Executor {
 }
 ```
 
-![TaskExecutor](/develop_framework/SpringBoot/img/TaskExecutor.png)
+![TaskExecutor](/image/TaskExecutor.png)
 
 如果没有自定义`Executor`, Spring将创建一个`SimpleAsyncTaskExector`并使用它。
 
