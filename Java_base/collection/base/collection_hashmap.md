@@ -289,7 +289,7 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
         // resize()不仅用来调整大小，还用来进行初始化配置
         n = (tab = resize()).length;
     // (n - 1) & hash这种方式也熟悉了吧？都在分析ArrayDeque中有体现
-    //这里就是看下在hash位置有没有元素，实际位置是hash % (length-1)
+    //这里就是看下在hash位置有没有元素，实际位置是hash & (length-1)
     if ((p = tab[i = (n - 1) & hash]) == null)
         // 将元素直接插进去
         tab[i] = newNode(hash, key, value, null);
