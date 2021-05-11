@@ -236,7 +236,7 @@ return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 
 > 为什么底层数组的长度总是要2的n次幂呢?
 
-`HashMap`中的hash算法是:
+`HashMap`中的计算元素下标的算法是:
 
 ```java
 hash & (length - 1)
@@ -359,9 +359,17 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 
 6. 如果当前存储元素不是`TreeNode`类型, 就表示存储结构是链表, 直接要新的元素插入到链尾;
 
+    > 那么这里有一个问题: 为什么jdk1.7中链表插入元素是头插法, 而1.8是尾插法?
+    >
+    >**因为1.7头插法扩容时，使用头插法会使链表发生反转，多线程环境下会产生环。**
+
+
+
 7. 在第6步时, 遍历链表插入新的元素时 比较每一个元素, 判断新元素key是否存在, 如果存在就直接覆盖value, 否则就插入链尾; 如果此时链表长度较长达到了8, 那就将整个链表进行树化;
 
 8. 插入元素成功后, `HashMap`的容量size+1, 如果此时的size大于 **`capacity*loadFactor`**, 那么就需要扩容, 再次调用`resize()`方法。
+
+
 
 ![collection_hashmap_put](/image/collection_hashmap_put.png)
 

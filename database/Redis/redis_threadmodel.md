@@ -64,7 +64,7 @@ Redis是基于reactor模式开发的网络时间处理器, 这个处理器叫做
 
     - Redis中的`server socket`产生`AE_READABLE`事件, 与连接应答处理器关联;
 
-    - 客户端的`socket``AE_READABLE`事件, 与命令请求处理器关联;
+    - 客户端的socket `AE_READABLE`事件, 与命令请求处理器关联;
 
 3. 如果客户端向Redis发送一个写操作命令, 也就是(`set k1 v1`), 这时socket会产生一个`AE_READABLE`事件, IO多路复用程序会将该事件压入队列中, 此时文件事件分派器从队列中获取事件, 由于客户端与Redis连接时, 客户端socket的`AE_READABLE`事件已经和命令请求处理器关联, 所以文件事件分派器会将该事件交给命令请求处理器处理, 读取数据。操作完成后, 该客户端socket会产生一个`AE_WRITABLE`事件与命令回复处理器关联;
 

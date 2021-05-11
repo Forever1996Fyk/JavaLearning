@@ -1,4 +1,4 @@
-## <center>Dubbo 相关面试题</center>
+## Dubbo 相关面试题
 
 ### 1. 你是否了解SPI, 能聊一聊SPI, 为什么要用SPI?
 
