@@ -467,12 +467,16 @@ private final class Worker
 }
 ```
 
-Worker是`ThreadPoolExecutor`的一个内部类, 它继承了AQS, 这里继承AQS的目的有三点:
+Worker是`ThreadPoolExecutor`的一个内部类, 它继承了AQS, 这里继承AQS的目的我觉得应该有两点:
 
-1. 简化获取和释放锁的过程
-2. 可以防止其他线程对这个工作线程的中断
-3. 这里不使用`ReentrantLock`, 而是一个简单的不可重入互斥锁, 为了防止在其他地方调用`setCorePoolSize`时, 能够获取到这个锁。
-4. 为了防止线程在真正开始运行任务之前发生中断, 一开始的状态就是负值, 也就是无法调用这个工作线程, 并且在runWorker方法中启动的时候清除这个状态
+1. 将锁的粒度细化到每个工作Worker。
+
+    如果多个Worker使用同一个锁，那么一个Worker Running持有锁的时候，其他Worker就无法执行，这显然是不合理的。
+
+2. 直接使用CAS获取，避免阻塞。
+
+    如果这个锁使用阻塞获取，那么在多Worker的情况下执行shutdown。如果这个Worker此时正在Running无法获取到锁，那么执行shutDown()线程就会阻塞住了，显然是不合理的。
+    因为在后面我们可以看到, 在调用shutdown方法时都会尝试获取worker的锁, 如果获取不到, 说明当前线程正在执行, 无法shutdown。
 
 Worker还实现了Runnable接口, 说明Worker本身就是一个线程。而它的构造函数:
 
@@ -928,7 +932,7 @@ final void tryTerminate() {
 
 ### 总结
 
-对于`ThreadPoolExecutor`源码, 就分析差不多了。想完全分析清除确实很不容易。所以做一下简单的总结。
+对于`ThreadPoolExecutor`源码, 就分析差不多了。想完全分析清楚确实很不容易。所以做一下简单的总结。
 
 1. 线程池的7大参数(必须牢记)
 2. 线程池的五个状态, 以及如何表示
