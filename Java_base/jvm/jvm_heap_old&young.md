@@ -6,7 +6,7 @@
 
 - 另一类是生命周期非常长, 在某些情况下还能与JVM的生命周期保持一致。
 
-这两个区域分别是, *年轻代(`YoungGen`)*, *老年代(`OldGen`)*。其中年轻代又可以分为 `Eden`空间, `Survior0`空间, `Survior1`空间。
+这两个区域分别是, *年轻代(`YoungGen`)*, *老年代(`OldGen`)* 。其中年轻代又可以分为 `Eden`空间, `Survior0`空间, `Survior1`空间。
 
 > `Survior`区有时又被称为 **from区, to区**。`Survior0`和`Survior1`哪个是空的, 那个区就成为to区。
 
@@ -24,7 +24,7 @@
 
     ![jvm_heap_old&young1](/image/jvm_heap_old&young1.png)
 
-    在`HotSpot`中, Eden区和另外两个Survivor区缺省所占比例是**8:1:1**, 我们可以通过`-XX:SurvivorRatio`调整空间比例, 如:`-XX:SurvivorRatio=8`。
+    在`HotSpot`中, Eden区和另外两个Survivor区缺省所占比例是8:1:1, 我们可以通过`-XX:SurvivorRatio`调整空间比例, 如:`-XX:SurvivorRatio=8`。
 
 - 几乎所有的Java对象new出来都是放在Eden区
 
