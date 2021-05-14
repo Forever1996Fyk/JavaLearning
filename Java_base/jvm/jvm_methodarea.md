@@ -253,7 +253,7 @@ Process finished with exit code 1
 
 那么如何解决这个错误?
 
-1. 首先要解决OOM异常或者Heap Space异常, 最主要的是确认到底是出现了 **`内存泄露(Memory Leak)`** 还是 **`内存溢出(Memory Overflow)`**。
+1. 首先要解决OOM异常或者Heap Space异常, 最主要的是确认到底是出现了 **`内存泄露(Memory Leak)`** 还是 **`内存溢出(Memory Overflow)`** 。
 
     > 一般是首先通过内存映像分析工具对dump的堆转储快照进行分析。
 

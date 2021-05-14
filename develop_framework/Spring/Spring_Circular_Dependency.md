@@ -31,12 +31,12 @@ private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 三级缓存的目的就是为了, 保证在循环引用的过程中能获取到, 不关心这个Bean能不能用。
 
 ```java
-private final Map<String, Object> singletonFactories = new HashMap(16);
+private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap(16);
 ```
 
 ### 2. 原理分析
 
-Spring决绝循环依赖的核心思想在于 **<font color="red">提前曝光!</font>**
+Spring解决循环依赖的核心思想在于 **<font color="red">提前曝光!</font>**
 
 1. 通过构建函数创建对象A; (这个A对象只是刚刚实例化, 还没有注入属性和调用init方法);
 
@@ -117,7 +117,7 @@ public interface ObjectFactory<T> {
 
 > 3. 为什么要包装一层`ObjectFactory`对象?
 
-我们知道在用AOP时, 会创建Bean的代理对象, 如果其他对象需要注入的是Bean的代理对象, 那么Spring 就必须提前创建好这个Bean的代理才行, 但是Spring是无法提前知道这个对象是不是有循环依赖的情况, 所以正常情况下(无循环依赖), Spring都是在Bean初始化完成后, 再创建Bean的嗯对象。所以Spring有两种选择:
+我们知道在用AOP时, 会创建Bean的代理对象, 如果其他对象需要注入的是Bean的代理对象, 那么Spring 就必须提前创建好这个Bean的代理才行, 但是Spring是无法提前知道这个对象是不是有循环依赖的情况, 所以正常情况下(无循环依赖), Spring都是在Bean初始化完成后, 再创建Bean的对象。所以Spring有两种选择:
 
 1. 不管有没有循环依赖, 都提前创建好代理对象, 并将代理对象放入缓存, 出现循环依赖时, 其他对象就可以获取到代理对象并注入;
 

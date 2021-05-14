@@ -279,7 +279,7 @@ processedRequest = checkMultipart(request);
 
 这个方法, 其实很简单, 就是判断当前请求是否是文件上传请求, 如果是文件上传请求, 就强转成`MultipartHttpServletRequest`返回; 如果不是, 就返回原`HttpServletRequest`。
 
-> 判断这个请求是否是文件上传, 其实也很简单, 只需要判断当前请求的`ContentType`是否以 **"multipart/"**开头即可。
+> 判断这个请求是否是文件上传, 其实也很简单, 只需要判断当前请求的`ContentType`是否以 **"multipart/"** 开头即可。
 
 *StandardServletMultipartResolver.java*:
 

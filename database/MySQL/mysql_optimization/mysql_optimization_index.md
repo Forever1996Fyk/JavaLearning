@@ -175,7 +175,7 @@ select age,count(*) from emp group by age order by null;
 
 #### 3.5 使用varchar代替char
 
-尽可能使用`varchar`代替`char`, 因为`varchar的字段存储空间更小, 节省存储空间。
+尽可能使用`varchar`代替`char`, 因为varchar的字段存储空间更小, 节省存储空间。
 
 #### 3.6 能用union all 就不用union
 

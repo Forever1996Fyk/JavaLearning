@@ -75,7 +75,7 @@ SQL语句的优化, 是开发人员必须掌握的技能,也是面试高频点�
 
 ### 3. explain分析
 
-我们通过上面的方法可以查到执行效率低的SQL语句后, 在利用 **`explain`**命令获取执行select语句的信息, 例如:
+我们通过上面的方法可以查到执行效率低的SQL语句后, 在利用 **`explain`** 命令获取执行select语句的信息, 例如:
 
 ```sql
 explain select * from tb_item where id = 1;
